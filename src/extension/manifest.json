@@ -21,10 +21,10 @@
 		"chrome_style": true,
 		"page": "options.html"
 	},
-	"background": {
-		"persistent": false,
-		"scripts": [
-			"background.js"
-		]
-	}
+	"content_scripts": [
+		{
+			"matches": ["*://lichess.org/*"],
+			"js": ["keyboard-control.js"]
+		}
+	]
 }
