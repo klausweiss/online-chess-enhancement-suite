@@ -1,5 +1,4 @@
 node_modules
-distribution
 .parcel-cache
 
 # Created by https://www.toptal.com/developers/gitignore/api/purescript
@@ -14,5 +13,6 @@ bower_components
 # Generated files
 .psci
 output
+distribution
 
 # End of https://www.toptal.com/developers/gitignore/api/purescript
