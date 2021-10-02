@@ -11,7 +11,16 @@ When creating a new Spago project, you can use
 to generate this file without the comments in this block.
 -}
 { name = "online-chess-enhancement-suite"
-, dependencies = [ "console", "effect", "prelude", "psci-support" ]
+, dependencies =
+  [ "console"
+  , "effect"
+  , "enums"
+  , "foldable-traversable"
+  , "maybe"
+  , "prelude"
+  , "psci-support"
+  , "signal"
+  ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }
