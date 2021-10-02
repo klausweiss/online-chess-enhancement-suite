@@ -1,3 +1,18 @@
 node_modules
 distribution
 .parcel-cache
+
+# Created by https://www.toptal.com/developers/gitignore/api/purescript
+# Edit at https://www.toptal.com/developers/gitignore?templates=purescript
+
+### PureScript ###
+# Dependencies
+.psci_modules
+.spago
+bower_components
+
+# Generated files
+.psci
+output
+
+# End of https://www.toptal.com/developers/gitignore/api/purescript
