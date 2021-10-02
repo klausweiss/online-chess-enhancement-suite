@@ -1,13 +1,13 @@
 {
-	"name": "Awesome Extension",
+	"name": "Online Chess Enhancement Suite",
 	"version": "0.0.0",
-	"description": "An awesome new browser extension",
-	"homepage_url": "https://github.com/awesome-templates/browser-extension-template",
+	"description": "Online Chess Enhancement Suite",
+	"homepage_url": "https://github.com/klausweiss/online-chess-enhancement-suite",
 	"manifest_version": 2,
 	"minimum_chrome_version": "74",
 	"applications": {
 		"gecko": {
-			"id": "awesome-extension@notlmn.github.io",
+			"id": "online-chess-enhancement-suite@notlmn.github.io",
 			"strict_min_version": "67.0"
 		}
 	},
