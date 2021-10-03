@@ -72,12 +72,6 @@ type State =
 
 newtype Config = Config Keymap
 
-movePiece :: Piece -> State -> Effect State
-movePiece _ state@{ initializedMovePiece: false } = pure $ state {initializedMovePiece = true}
-movePiece piece state = do
-  log $ "moving piece: " <> show piece <> ", state: " <> show state
-  pure state
-
 movePieceSignal :: Keymap -> Piece -> Effect (Signal Piece)
 movePieceSignal km p = do
   let key = km.pieceKey p
@@ -95,6 +89,12 @@ movePiecesSignal km = let
    in do
     mergedSignals <- mergeMany <$> allSignals
     pure $ fromMaybe (constant King) mergedSignals
+
+movePiece :: Piece -> State -> Effect State
+movePiece _ state@{ initializedMovePiece: false } = pure $ state {initializedMovePiece = true}
+movePiece piece state = do
+  log $ "moving piece: " <> show piece <> ", state: " <> show state
+  pure state
 
 main :: Effect Unit
 main = do
