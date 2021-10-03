@@ -66,19 +66,22 @@ defaultKeymap =
   , rightPiece: keycodeFor 'd'
   }
 
-type State = Int
+type State = 
+  { initializedMovePiece :: Boolean -- foldEffect yields a Signal once when called... 
+  }
 
 newtype Config = Config Keymap
 
 movePiece :: Piece -> State -> Effect State
+movePiece _ state@{ initializedMovePiece: false } = pure $ state {initializedMovePiece = true}
 movePiece piece state = do
   log $ "moving piece: " <> show piece <> ", state: " <> show state
-  pure (state + 1)
+  pure state
 
 movePieceSignal :: Keymap -> Piece -> Effect (Signal Piece)
 movePieceSignal km p = do
   let key = km.pieceKey p
-  log $ show key <> " <<- subscribing " <> show p <> " for this key"
+  log $ "subscribing " <> show p <> " for key " <> show key
   keyPressSignal <- keyPressed key
   let isKeyDown = eq true
   -- TODO: keyUp for keys which support it
@@ -96,7 +99,7 @@ movePiecesSignal km = let
 main :: Effect Unit
 main = do
   let keymap = defaultKeymap
-  let initialState = 0
+  let initialState = {initializedMovePiece: false}
   moveSignal <- movePiecesSignal keymap
   log "about to fold"
   _ <- foldEffect movePiece initialState moveSignal :: Effect (Signal State)
