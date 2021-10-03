@@ -12,7 +12,7 @@ import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Console (log)
 import Keyboard (Keycode, keycodeFor, shiftKey)
-import Signal (Signal, constant, mergeMany, runSignal, (~>))
+import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (keyPressed)
 import Signal.Effect (foldEffect)
 
@@ -72,15 +72,17 @@ newtype Config = Config Keymap
 
 movePiece :: Piece -> State -> Effect State
 movePiece piece state = do
-  log $ "moving piece: " <> show piece
+  log $ "moving piece: " <> show piece <> ", state: " <> show state
   pure (state + 1)
 
 movePieceSignal :: Keymap -> Piece -> Effect (Signal Piece)
 movePieceSignal km p = do
   let key = km.pieceKey p
-  log $ show key <> " <<- subscribing for this key"
+  log $ show key <> " <<- subscribing " <> show p <> " for this key"
   keyPressSignal <- keyPressed key
-  pure (const p <$> keyPressSignal)
+  let isKeyDown = eq true
+  -- TODO: keyUp for keys which support it
+  pure (const p <$> filter isKeyDown true keyPressSignal) -- only keydowns, true is essential for SHIFT to work
 
 movePiecesSignal :: Keymap -> Effect (Signal Piece)
 movePiecesSignal km = let
@@ -96,9 +98,7 @@ main = do
   let keymap = defaultKeymap
   let initialState = 0
   moveSignal <- movePiecesSignal keymap
-  todo <- foldEffect movePiece initialState moveSignal
-  runSignal $ todo ~> (show >>> log)
-  log "sup, done"
+  log "about to fold"
+  _ <- foldEffect movePiece initialState moveSignal :: Effect (Signal State)
+  log "folded"
 
-showB :: Boolean -> Effect Unit
-showB = show >>> log
