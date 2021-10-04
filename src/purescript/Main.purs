@@ -2,6 +2,7 @@ module Main where
 
 import Prelude
 
+import Lichess as Lichess
 import Chess (Piece(..), Square)
 import Data.Enum (upFromIncluding)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -9,8 +10,8 @@ import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Console (log)
 import Keyboard (Keycode, keycodeFor, shiftKey)
-import Signal (Signal, constant, filter, mergeMany, (~>))
-import Signal.DOM (keyPressed, mousePos)
+import Signal (Signal, constant, filter, mergeMany, (~>), unwrap)
+import Signal.DOM (keyPressed, mousePos, CoordinatePair)
 import Signal.Effect (foldEffect)
 
 
@@ -65,11 +66,10 @@ movePiecesSignal km = let
     mergedSignals <- mergeMany <$> allSignals
     pure $ fromMaybe (constant King) mergedSignals
 
-pointOnSquareSignal :: Effect (Signal (Maybe Square))
-pointOnSquareSignal = do
+pointOnSquareSignal :: (CoordinatePair -> Effect (Maybe Square)) -> Effect (Signal (Maybe Square))
+pointOnSquareSignal coordsToSquare = do
   mouseSignal <- mousePos
-  let coordSignal = mouseSignal ~> const Nothing
-  pure coordSignal
+  unwrap (mouseSignal ~> coordsToSquare)
 
 
 data AppSignal 
@@ -79,7 +79,6 @@ data AppSignal
 processSignal :: AppSignal -> State -> Effect State
 processSignal (MovePiece p) s = movePiece p s
 processSignal (PointOnSquare ms) s = do
-  log $ "pointing on square " <> show ms
   pure s
 
 movePiece :: Piece -> State -> Effect State
@@ -93,7 +92,7 @@ main = do
   let keymap = defaultKeymap
   let initialState = {initializedMovePiece: false, squareUnderPointer: Nothing}
   movePiecesSignal' <- movePiecesSignal keymap
-  pointOnSquareSignal' <- pointOnSquareSignal
+  pointOnSquareSignal' <- pointOnSquareSignal Lichess.coordsToSquare
   let sig = (MovePiece <$> movePiecesSignal')
          <> (PointOnSquare <$> pointOnSquareSignal')
   log "about to fold"
