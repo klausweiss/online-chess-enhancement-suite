@@ -2,43 +2,16 @@ module Main where
 
 import Prelude
 
-import Data.Bounded.Generic (genericTop, genericBottom)
-import Data.Enum (class Enum, upFromIncluding)
-import Data.Enum.Generic (genericPred, genericSucc)
-import Data.Generic.Rep (class Generic)
-import Data.Maybe (fromMaybe)
-import Data.Show.Generic (genericShow)
+import Chess (Piece(..), Square)
+import Data.Enum (upFromIncluding)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Console (log)
 import Keyboard (Keycode, keycodeFor, shiftKey)
-import Signal (Signal, constant, filter, mergeMany)
-import Signal.DOM (keyPressed)
+import Signal (Signal, constant, filter, mergeMany, (~>))
+import Signal.DOM (keyPressed, mousePos)
 import Signal.Effect (foldEffect)
-
-
-data Piece 
-  = Pawn
-  | Rook
-  | Knight
-  | Bishop
-  | King
-  | Queen
-
-derive instance genericPiece :: Generic Piece _
-derive instance eqPiece :: Eq Piece
-derive instance ordPiece :: Ord Piece
-
-instance showPiece :: Show Piece where
-  show = genericShow
-
-instance boundedPiece :: Bounded Piece where
-  top = genericTop
-  bottom = genericBottom
-
-instance boundedEnumPiece :: Enum Piece where
-  succ = genericSucc
-  pred = genericPred
 
 
 type Keymap =
@@ -48,6 +21,7 @@ type Keymap =
   , leftPiece :: Keycode
   , rightPiece :: Keycode
   }
+
 
 defaultKeymap :: Keymap
 defaultKeymap =
@@ -68,6 +42,7 @@ defaultKeymap =
 
 type State = 
   { initializedMovePiece :: Boolean -- foldEffect yields a Signal once when called... 
+  , squareUnderPointer :: Maybe Square
   }
 
 newtype Config = Config Keymap
@@ -90,6 +65,23 @@ movePiecesSignal km = let
     mergedSignals <- mergeMany <$> allSignals
     pure $ fromMaybe (constant King) mergedSignals
 
+pointOnSquareSignal :: Effect (Signal (Maybe Square))
+pointOnSquareSignal = do
+  mouseSignal <- mousePos
+  let coordSignal = mouseSignal ~> const Nothing
+  pure coordSignal
+
+
+data AppSignal 
+  = MovePiece Piece
+  | PointOnSquare (Maybe Square)
+
+processSignal :: AppSignal -> State -> Effect State
+processSignal (MovePiece p) s = movePiece p s
+processSignal (PointOnSquare ms) s = do
+  log $ "pointing on square " <> show ms
+  pure s
+
 movePiece :: Piece -> State -> Effect State
 movePiece _ state@{ initializedMovePiece: false } = pure $ state {initializedMovePiece = true}
 movePiece piece state = do
@@ -99,9 +91,18 @@ movePiece piece state = do
 main :: Effect Unit
 main = do
   let keymap = defaultKeymap
-  let initialState = {initializedMovePiece: false}
-  moveSignal <- movePiecesSignal keymap
+  let initialState = {initializedMovePiece: false, squareUnderPointer: Nothing}
+  movePiecesSignal' <- movePiecesSignal keymap
+  pointOnSquareSignal' <- pointOnSquareSignal
+  let sig = (MovePiece <$> movePiecesSignal')
+         <> (PointOnSquare <$> pointOnSquareSignal')
   log "about to fold"
-  _ <- foldEffect movePiece initialState moveSignal :: Effect (Signal State)
+  _ <- foldEffect processSignal initialState sig :: Effect (Signal State)
   log "folded"
 
+
+-- notes:
+-- - clicking on a piece in lichess:
+--   - click on the board element, by triggering a click MouseEvent, bubble: true
+--   - get the board element from document.elementFromPoint
+--   - 
