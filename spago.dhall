@@ -16,10 +16,14 @@ to generate this file without the comments in this block.
   , "effect"
   , "enums"
   , "foldable-traversable"
+  , "integers"
   , "maybe"
   , "prelude"
   , "psci-support"
   , "signal"
+  , "transformers"
+  , "web-dom"
+  , "web-html"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

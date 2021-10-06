@@ -37,7 +37,7 @@ type ChessboardRow = Int
 
 type ChessboardColumn = Char
 
-data Square = Square ChessboardRow ChessboardColumn
+data Square = Square ChessboardColumn ChessboardRow
 
 derive instance genericSquare :: Generic Square _
 derive instance eqSquare :: Eq Square
