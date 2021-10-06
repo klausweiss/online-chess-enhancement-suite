@@ -2,11 +2,12 @@ module Lichess where
 
 import Prelude
 
-import Chess (ChessboardColumn, ChessboardRow, Square(..))
+import BoardGeometry (Size2d, xToColumn, yToRow)
+import Chess (Square(..))
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
 import Data.Int (round)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Effect (Effect)
 import Signal.DOM (CoordinatePair)
 import Web.DOM (Element)
@@ -32,8 +33,6 @@ coordsToSquare coords = do
         pure $ Square col row
   pure maybeSquare
 
-type Size2d = {width :: Int, height :: Int}
-
 sizeToCoords :: forall r. { height :: Number , width :: Number | r } -> { x :: Int , y :: Int }
 sizeToCoords s = {x: round s.width, y: round s.height}
 
@@ -44,25 +43,3 @@ boardCoords :: HTMLElement -> Effect CoordinatePair
 boardCoords b = do
   rect <- getBoundingClientRect b
   pure { x : round rect.left, y : round rect.top}
-
-yToRow :: Int -> Int -> Maybe ChessboardRow
-yToRow height y = let 
-   squareSize = height / 8
-   row = (y / squareSize) + 1
-  in if row > 0 && row < 9 then Just row else Nothing
-
-xToColumn :: Int -> Int -> Maybe ChessboardColumn
-xToColumn width y = yToRow width y >>= rowToChar
-
-rowToChar :: Int -> Maybe Char
-rowToChar 1 = Just 'a'
-rowToChar 2 = Just 'b'
-rowToChar 3 = Just 'c'
-rowToChar 4 = Just 'd'
-rowToChar 5 = Just 'e'
-rowToChar 6 = Just 'f'
-rowToChar 7 = Just 'g'
-rowToChar 8 = Just 'h'
-rowToChar _ = Nothing
-
-
