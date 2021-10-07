@@ -78,11 +78,12 @@ data AppSignal
 
 processSignal :: AppSignal -> State -> Effect State
 processSignal (MovePiece p) s = movePiece p s
-processSignal (PointAtSquare ms) s = do
-  pure s
+processSignal (PointAtSquare _ms) s = pure s
 
 movePiece :: Piece -> State -> Effect State
 movePiece piece state = do
+  position <- runMaybeT Lichess.getCurrentPosition
+  log $ "position: " <> show position
   log $ "moving piece: " <> show piece <> ", state: " <> show state
   pure state
 

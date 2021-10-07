@@ -12,7 +12,8 @@ to generate this file without the comments in this block.
 -}
 { name = "online-chess-enhancement-suite"
 , dependencies =
-  [ "console"
+  [ "arrays"
+  , "console"
   , "effect"
   , "enums"
   , "foldable-traversable"
@@ -22,6 +23,7 @@ to generate this file without the comments in this block.
   , "psci-support"
   , "signal"
   , "transformers"
+  , "tuples"
   , "web-dom"
   , "web-html"
   ]
