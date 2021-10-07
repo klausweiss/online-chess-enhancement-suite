@@ -42,8 +42,7 @@ defaultKeymap =
   }
 
 type State = 
-  { initializedMovePiece :: Boolean -- foldEffect yields a Signal once when called... 
-  , squareUnderPointer :: Maybe Square
+  { squareUnderPointer :: Maybe Square
   }
 
 newtype Config = Config Keymap
@@ -82,7 +81,6 @@ processSignal (PointAtSquare ms) s = do
   pure s
 
 movePiece :: Piece -> State -> Effect State
-movePiece _ state@{ initializedMovePiece: false } = pure $ state {initializedMovePiece = true}
 movePiece piece state = do
   log $ "moving piece: " <> show piece <> ", state: " <> show state
   pure state
@@ -90,11 +88,11 @@ movePiece piece state = do
 main :: Effect Unit
 main = do
   let keymap = defaultKeymap
-  let initialState = {initializedMovePiece: false, squareUnderPointer: Nothing}
+  let initialState = {squareUnderPointer: Nothing}
   movePiecesSignal' <- movePiecesSignal keymap
   pointAtSquareSignal' <- pointAtSquareSignal Lichess.coordsToSquare
-  let sig = (MovePiece <$> movePiecesSignal')
-         <> (PointAtSquare <$> pointAtSquareSignal')
+  let sig = (PointAtSquare <$> pointAtSquareSignal')
+         <> (MovePiece <$> movePiecesSignal')
   log "about to fold"
   _ <- foldEffect processSignal initialState sig :: Effect (Signal State)
   log "folded"
