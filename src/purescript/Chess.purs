@@ -33,11 +33,11 @@ instance boundedEnumPiece :: Enum Piece where
   pred = genericPred
 
 
-type ChessboardRow = Int
+type Rank = Int
 
-type ChessboardColumn = Char
+type File = Char
 
-data Square = Square ChessboardColumn ChessboardRow
+data Square = Square File Rank
 
 derive instance genericSquare :: Generic Square _
 derive instance eqSquare :: Eq Square

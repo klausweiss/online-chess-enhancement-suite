@@ -2,17 +2,17 @@ module Lichess where
 
 import Prelude
 
-import BoardGeometry (Size2d, xToColumn, yToRow)
+import BoardGeometry (Size2d, xToFile, yToRank)
 import Chess (Square(..))
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
 import Data.Int (round)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Signal.DOM (CoordinatePair)
 import Web.DOM (Element)
 import Web.DOM.Element (clientHeight, clientWidth)
-import Web.DOM.ParentNode (QuerySelector(..), querySelector)
+import Web.DOM.ParentNode (QuerySelector(..), querySelector, ParentNode)
 import Web.HTML (HTMLElement, window)
 import Web.HTML.HTMLDocument (toParentNode)
 import Web.HTML.HTMLElement (fromElement, getBoundingClientRect)
@@ -28,9 +28,9 @@ coordsToSquare coords = do
      size <- lift $ boardSize board
      let {x: relativeX, y: relativeY} = coords - bCoords
      MaybeT $ pure do
-        col <- xToColumn size.width relativeX
-        row <- yToRow size.height (size.height - relativeY)
-        pure $ Square col row
+        file <- xToFile size.width relativeX
+        rank <- yToRank size.height (size.height - relativeY)
+        pure $ Square file rank
   pure maybeSquare
 
 sizeToCoords :: forall r. { height :: Number , width :: Number | r } -> { x :: Int , y :: Int }
