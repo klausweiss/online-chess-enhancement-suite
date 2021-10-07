@@ -66,19 +66,19 @@ movePiecesSignal km = let
     mergedSignals <- mergeMany <$> allSignals
     pure $ fromMaybe (constant King) mergedSignals
 
-pointOnSquareSignal :: (CoordinatePair -> Effect (Maybe Square)) -> Effect (Signal (Maybe Square))
-pointOnSquareSignal coordsToSquare = do
+pointAtSquareSignal :: (CoordinatePair -> Effect (Maybe Square)) -> Effect (Signal (Maybe Square))
+pointAtSquareSignal coordsToSquare = do
   mouseSignal <- mousePos
   unwrap (mouseSignal ~> coordsToSquare)
 
 
 data AppSignal 
   = MovePiece Piece
-  | PointOnSquare (Maybe Square)
+  | PointAtSquare (Maybe Square)
 
 processSignal :: AppSignal -> State -> Effect State
 processSignal (MovePiece p) s = movePiece p s
-processSignal (PointOnSquare ms) s = do
+processSignal (PointAtSquare ms) s = do
   pure s
 
 movePiece :: Piece -> State -> Effect State
@@ -92,9 +92,9 @@ main = do
   let keymap = defaultKeymap
   let initialState = {initializedMovePiece: false, squareUnderPointer: Nothing}
   movePiecesSignal' <- movePiecesSignal keymap
-  pointOnSquareSignal' <- pointOnSquareSignal Lichess.coordsToSquare
+  pointAtSquareSignal' <- pointAtSquareSignal Lichess.coordsToSquare
   let sig = (MovePiece <$> movePiecesSignal')
-         <> (PointOnSquare <$> pointOnSquareSignal')
+         <> (PointAtSquare <$> pointAtSquareSignal')
   log "about to fold"
   _ <- foldEffect processSignal initialState sig :: Effect (Signal State)
   log "folded"

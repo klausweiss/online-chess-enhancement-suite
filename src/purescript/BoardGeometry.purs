@@ -29,3 +29,6 @@ rankToChar 8 = Just 'h'
 rankToChar _ = Nothing
 
 
+data Orientation = WhiteDown | BlackDown
+
+derive instance eqOrientation :: Eq Orientation

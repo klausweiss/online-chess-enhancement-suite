@@ -34,9 +34,7 @@ instance boundedEnumPiece :: Enum Piece where
 
 
 type Rank = Int
-
 type File = Char
-
 data Square = Square File Rank
 
 derive instance genericSquare :: Generic Square _
@@ -45,4 +43,18 @@ derive instance ordSquare :: Ord Square
 
 instance showSquare :: Show Square where
   show = genericShow
+
+oppositeSquare :: Square -> Square
+oppositeSquare (Square f r) = Square (oppositeFile f) (9 - r)
+
+oppositeFile :: File -> File
+oppositeFile 'a' = 'h'
+oppositeFile 'b' = 'g'
+oppositeFile 'c' = 'f'
+oppositeFile 'd' = 'e'
+oppositeFile 'e' = 'd'
+oppositeFile 'f' = 'c'
+oppositeFile 'g' = 'b'
+oppositeFile 'h' = 'a'
+oppositeFile _ = 'x'
 
