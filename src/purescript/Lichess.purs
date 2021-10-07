@@ -19,22 +19,20 @@ import Web.HTML.HTMLDocument (toParentNode)
 import Web.HTML.HTMLElement (fromElement, getBoundingClientRect)
 import Web.HTML.Window (document)
 
-coordsToSquare :: CoordinatePair -> Effect (Maybe Square)
+coordsToSquare :: CoordinatePair -> MaybeT Effect Square
 coordsToSquare coords = do
-  doc <- window >>= document <#> toParentNode
-  maybeSquare <- runMaybeT $ do
-     board <- MaybeT $ querySelector (QuerySelector "cg-board") doc :: MaybeT Effect Element
-     htmlBoard <- MaybeT <<< pure $ fromElement board
-     bCoords <- lift $ boardCoords htmlBoard
-     size <- lift $ boardSize board
-     let {x: relativeX, y: relativeY} = coords - bCoords
-     squareWhiteDown <- MaybeT $ pure do
-        file <- xToFile size.width relativeX
-        rank <- yToRank size.height (size.height - relativeY)
-        pure $ Square file rank
-     o <- getOrientation doc
-     pure $ if o == WhiteDown then squareWhiteDown else oppositeSquare squareWhiteDown
-  pure maybeSquare
+   doc <- lift $ window >>= document <#> toParentNode
+   board <- MaybeT $ querySelector (QuerySelector "cg-board") doc :: MaybeT Effect Element
+   htmlBoard <- MaybeT <<< pure $ fromElement board
+   bCoords <- lift $ boardCoords htmlBoard
+   size <- lift $ boardSize board
+   let {x: relativeX, y: relativeY} = coords - bCoords
+   squareWhiteDown <- MaybeT $ pure do
+     file <- xToFile size.width relativeX
+     rank <- yToRank size.height (size.height - relativeY)
+     pure $ Square file rank
+   o <- getOrientation doc
+   pure $ if o == WhiteDown then squareWhiteDown else oppositeSquare squareWhiteDown
 
 sizeToCoords :: forall r. { height :: Number , width :: Number | r } -> { x :: Int , y :: Int }
 sizeToCoords s = {x: round s.width, y: round s.height}
@@ -44,8 +42,8 @@ boardSize b = {width : _, height : _} <$> (clientWidth b <#> round) <*> (clientH
 
 boardCoords :: HTMLElement -> Effect CoordinatePair
 boardCoords b = do
-  rect <- getBoundingClientRect b
-  pure { x : round rect.left, y : round rect.top}
+   rect <- getBoundingClientRect b
+   pure { x : round rect.left, y : round rect.top}
 
 getOrientation :: ParentNode -> MaybeT Effect Orientation
 getOrientation doc = do

@@ -4,6 +4,7 @@ import Prelude
 
 import Lichess as Lichess
 import Chess (Piece(..), Square)
+import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Enum (upFromIncluding)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Traversable (traverse)
@@ -90,7 +91,7 @@ main = do
   let keymap = defaultKeymap
   let initialState = {squareUnderPointer: Nothing}
   movePiecesSignal' <- movePiecesSignal keymap
-  pointAtSquareSignal' <- pointAtSquareSignal Lichess.coordsToSquare
+  pointAtSquareSignal' <- pointAtSquareSignal (runMaybeT <<< Lichess.coordsToSquare)
   let sig = (PointAtSquare <$> pointAtSquareSignal')
          <> (MovePiece <$> movePiecesSignal')
   log "about to fold"
