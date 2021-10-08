@@ -2,7 +2,7 @@ module Chess where
 
 import Prelude
 
-import Data.Array (filter, partition)
+import Data.Array (filter, partition, take)
 import Data.Bounded.Generic (genericTop, genericBottom)
 import Data.Enum (class Enum)
 import Data.Enum.Generic (genericPred, genericSucc)
@@ -97,4 +97,12 @@ makeSimplePosition :: Array PieceOnBoard -> SimplePosition
 makeSimplePosition pieces = let
     {yes: w, no: b} = partition (\(PieceOnBoard (PlayerPiece color _) _) -> color == White) pieces
   in { black: b, white: w }
+
+
+findPossibleMoveTargets :: Color -> Piece -> Square -> SimplePosition -> Array PieceOnBoard
+findPossibleMoveTargets c p dest pos = 
+  let
+      possiblePieces = filter (\(PieceOnBoard (PlayerPiece _ piece) _) -> piece == p) $ if c == White then pos.white else pos.black
+   in
+    take 1 possiblePieces -- TODO: this is temp
 

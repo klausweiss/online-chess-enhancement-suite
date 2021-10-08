@@ -3,10 +3,10 @@ module Lichess where
 import Prelude
 
 import BoardGeometry (Orientation(..), Size2d, xToFile, yToRank)
-import Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), makeSimplePosition, oppositeSquare)
+import Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findPossibleMoveTargets, makeSimplePosition, oppositeSquare)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
-import Data.Array (catMaybes, find)
+import Data.Array (catMaybes, find, head)
 import Data.Array.NonEmpty ((!!))
 import Data.Int (fromString, round)
 import Data.Maybe (Maybe(..))
@@ -15,7 +15,7 @@ import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
-import Effect.Console (log, logShow)
+import Effect.Console (log)
 import Signal.DOM (CoordinatePair)
 import Web.DOM.DOMTokenList (contains, DOMTokenList)
 import Web.DOM.Element (Element, classList, clientHeight, clientWidth, fromNode, getAttribute)
@@ -87,9 +87,7 @@ pieceFromElement boardSize orient el = do
    piece <- pieceTypeFromElement el
    square <- getSquareFromElement boardSize orient el
    let playerPiece = PlayerPiece color piece
-   x <- MaybeT $ pure $ Just $ PieceOnBoard playerPiece square
-   lift <<< log $ show x
-   pure x
+   MaybeT $ pure $ Just $ PieceOnBoard playerPiece square
 
 colorFromElement :: Element -> MaybeT Effect Color
 colorFromElement el = do
@@ -139,3 +137,33 @@ getCoordsFromStyleAttr style = do
    x <- (join $ matches !! 1) >>= fromString
    y <- (join $ matches !! 2) >>= fromString
    Just {x: x, y: y}
+
+
+makeAMove :: Square -> Square -> MaybeT Effect Unit
+makeAMove from to = do
+   doc <- lift $ window >>= document <#> HTMLDocument.toParentNode
+   board <- getBoardElement doc
+   orientation <- getOrientation doc
+   boardSize <- lift $ getBoardSize board
+
+   clickSquare orientation boardSize from
+   clickSquare orientation boardSize to
+
+clickSquare :: Orientation -> Size2d -> Square -> MaybeT Effect Unit
+clickSquare orient boardSize square = do
+   lift $ log $ "clicking " <> show square
+   pure unit
+
+
+moveRandomPieceToSquare :: Piece -> Square -> MaybeT Effect Unit
+moveRandomPieceToSquare p dest = do
+   doc <- lift $ window >>= document <#> HTMLDocument.toParentNode
+   orientation <- getOrientation doc
+   position <- getCurrentPosition
+   let color = if orientation == BlackDown then Black else White
+   let possibleTargets = findPossibleMoveTargets color p dest position
+   lift $ log $ show possibleTargets
+   (PieceOnBoard _ source) <- MaybeT $ pure $ head possibleTargets
+   makeAMove source dest
+
+

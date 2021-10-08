@@ -2,15 +2,16 @@ module Main where
 
 import Prelude
 
-import Lichess as Lichess
 import Chess (Piece(..), Square)
-import Control.Monad.Maybe.Trans (runMaybeT)
+import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
+import Control.Monad.Trans.Class (lift)
 import Data.Enum (upFromIncluding)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Console (log)
 import Keyboard (Keycode, keycodeFor, shiftKey)
+import Lichess as Lichess
 import Signal (Signal, constant, filter, mergeMany, (~>), unwrap)
 import Signal.DOM (keyPressed, mousePos, CoordinatePair)
 import Signal.Effect (foldEffect)
@@ -51,7 +52,6 @@ newtype Config = Config Keymap
 movePieceSignal :: Keymap -> Piece -> Effect (Signal Piece)
 movePieceSignal km p = do
   let key = km.pieceKey p
-  log $ "subscribing " <> show p <> " for key " <> show key
   keyPressSignal <- keyPressed key
   let isKeyDown = eq true
   -- TODO: keyUp for keys which support it
@@ -78,13 +78,14 @@ data AppSignal
 
 processSignal :: AppSignal -> State -> Effect State
 processSignal (MovePiece p) s = movePiece p s
-processSignal (PointAtSquare _ms) s = pure s
+processSignal (PointAtSquare ms) s = do
+  pure $ s { squareUnderPointer = ms }
 
 movePiece :: Piece -> State -> Effect State
 movePiece piece state = do
-  position <- runMaybeT Lichess.getCurrentPosition
-  log $ "position: " <> show position
-  log $ "moving piece: " <> show piece <> ", state: " <> show state
+  _ <- runMaybeT $ do
+     square <- MaybeT $ pure $ state.squareUnderPointer
+     Lichess.moveRandomPieceToSquare piece square
   pure state
 
 main :: Effect Unit
@@ -95,9 +96,8 @@ main = do
   pointAtSquareSignal' <- pointAtSquareSignal (runMaybeT <<< Lichess.coordsToSquare)
   let sig = (PointAtSquare <$> pointAtSquareSignal')
          <> (MovePiece <$> movePiecesSignal')
-  log "about to fold"
   _ <- foldEffect processSignal initialState sig :: Effect (Signal State)
-  log "folded"
+  log "ok go"
 
 
 -- notes:
