@@ -7,15 +7,18 @@ import Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePos
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
 import Data.Array (catMaybes, find)
-import Data.Int (round)
+import Data.Array.NonEmpty ((!!))
+import Data.Int (fromString, round)
 import Data.Maybe (Maybe(..))
+import Data.String.Regex (Regex, match)
+import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
-import Effect.Console (log)
+import Effect.Console (log, logShow)
 import Signal.DOM (CoordinatePair)
 import Web.DOM.DOMTokenList (contains, DOMTokenList)
-import Web.DOM.Element (Element, classList, clientHeight, clientWidth, fromNode)
+import Web.DOM.Element (Element, classList, clientHeight, clientWidth, fromNode, getAttribute)
 import Web.DOM.Element as Element
 import Web.DOM.Node (Node)
 import Web.DOM.NodeList (toArray)
@@ -29,16 +32,20 @@ coordsToSquare :: CoordinatePair -> MaybeT Effect Square
 coordsToSquare coords = do
    doc <- lift $ window >>= document <#> HTMLDocument.toParentNode
    board <- getBoardElement doc
+   orientation <- getOrientation doc
    htmlBoard <- MaybeT <<< pure $ fromElement board
    bCoords <- lift $ boardCoords htmlBoard
-   size <- lift $ getBoardSize board
-   let {x: relativeX, y: relativeY} = coords - bCoords
+   let relativeCoords = coords - bCoords
+   boardSize <- lift $ getBoardSize board
+   boardCoordsToSquare boardSize orientation relativeCoords
+
+boardCoordsToSquare :: Size2d -> Orientation -> CoordinatePair -> MaybeT Effect Square
+boardCoordsToSquare boardSize orientation {x: relativeX, y: relativeY} = do
    squareWhiteDown <- MaybeT $ pure do
-     file <- xToFile size.width relativeX
-     rank <- yToRank size.height (size.height - relativeY)
+     file <- xToFile boardSize.width relativeX
+     rank <- yToRank boardSize.height (boardSize.height - relativeY)
      pure $ Square file rank
-   o <- getOrientation doc
-   pure $ if o == WhiteDown then squareWhiteDown else oppositeSquare squareWhiteDown
+   pure $ if orientation == WhiteDown then squareWhiteDown else oppositeSquare squareWhiteDown
 
 sizeToCoords :: forall r. { height :: Number , width :: Number | r } -> { x :: Int , y :: Int }
 sizeToCoords s = {x: round s.width, y: round s.height}
@@ -66,18 +73,19 @@ getCurrentPosition :: MaybeT Effect SimplePosition
 getCurrentPosition = do
    doc <- lift $ window >>= document <#> HTMLDocument.toParentNode
    board <- getBoardElement doc
+   orient <- getOrientation doc
    bSize <- lift <<< getBoardSize $ board
    piecesNodes <- lift $ querySelectorAll (QuerySelector "piece") (Element.toParentNode board) >>= toArray :: MaybeT Effect (Array Node)
    piecesElements <- traverse (MaybeT <<< pure <<< fromNode) piecesNodes :: MaybeT Effect (Array Element)
-   maybePieces <- lift <<< sequence $ (runMaybeT <<< pieceFromElement bSize) <$> piecesElements 
+   maybePieces <- lift <<< sequence $ (runMaybeT <<< pieceFromElement bSize orient) <$> piecesElements 
    let pieces = catMaybes maybePieces
    pure $ makeSimplePosition pieces
 
-pieceFromElement :: Size2d -> Element -> MaybeT Effect PieceOnBoard
-pieceFromElement boardSize el = do
+pieceFromElement :: Size2d -> Orientation -> Element -> MaybeT Effect PieceOnBoard
+pieceFromElement boardSize orient el = do
    color <- colorFromElement el
    piece <- pieceTypeFromElement el
-   square <- getSquareFromElement boardSize el
+   square <- getSquareFromElement boardSize orient el
    let playerPiece = PlayerPiece color piece
    x <- MaybeT $ pure $ Just $ PieceOnBoard playerPiece square
    lift <<< log $ show x
@@ -113,7 +121,20 @@ pieceTypeFromElement el = let
       ] classes
    MaybeT <<< pure <<< Just $ pieceType
 
-getSquareFromElement :: Size2d -> Element -> MaybeT Effect Square
-getSquareFromElement boardSize el = do
-   MaybeT $ pure $ Just (Square 'a' 4) -- TODO
+getSquareFromElement :: Size2d -> Orientation -> Element -> MaybeT Effect Square
+getSquareFromElement boardSize orient el = do
+   style <- MaybeT $ getAttribute "style" el
+   coords <- MaybeT <<< pure $ getCoordsFromStyleAttr style
+   boardCoordsToSquare boardSize orient (coords + {x: 1, y: 1})
 
+coordsRegex :: Regex
+coordsRegex = unsafeRegex "translate\\(\\s*(\\d+)(?:\\.\\d+)?px,\\s*(\\d+)(?:\\.\\d+)?px\\)" mempty
+
+getCoordsFromStyleAttr :: String -> Maybe CoordinatePair
+getCoordsFromStyleAttr style = do
+   -- example style: "transform: translate(0.5px, 180.433px);"
+   -- converted to                         0    , 180
+   matches <- match coordsRegex style
+   x <- (join $ matches !! 1) >>= fromString
+   y <- (join $ matches !! 2) >>= fromString
+   Just {x: x, y: y}
