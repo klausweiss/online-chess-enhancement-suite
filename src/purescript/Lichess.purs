@@ -55,9 +55,9 @@ boardCoords b = do
 
 getOrientation :: ParentNode -> MaybeT Effect Orientation
 getOrientation doc = do
-   filesElem <- MaybeT $ querySelector (QuerySelector "coords.files") doc
-   classes <- lift $ classList filesElem
-   isBlackDown <- lift $ contains classes "black"
+   board <- MaybeT $ querySelector (QuerySelector ".cg-wrap") doc
+   classes <- lift $ classList board
+   isBlackDown <- lift $ contains classes "orientation-black"
    pure $ if isBlackDown then BlackDown else WhiteDown
 
 
