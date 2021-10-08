@@ -123,9 +123,10 @@ pieceTypeFromElement el = let
 
 getSquareFromElement :: Size2d -> Orientation -> Element -> MaybeT Effect Square
 getSquareFromElement boardSize orient el = do
+   let halfSquare = {x: boardSize.width / 16, y: boardSize.height / 16}
    style <- MaybeT $ getAttribute "style" el
    coords <- MaybeT <<< pure $ getCoordsFromStyleAttr style
-   boardCoordsToSquare boardSize orient (coords + {x: 1, y: 1})
+   boardCoordsToSquare boardSize orient (coords + halfSquare)
 
 coordsRegex :: Regex
 coordsRegex = unsafeRegex "translate\\(\\s*(\\d+)(?:\\.\\d+)?px,\\s*(\\d+)(?:\\.\\d+)?px\\)" mempty
