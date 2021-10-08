@@ -16,17 +16,18 @@ import Effect.Console (log)
 import Signal.DOM (CoordinatePair)
 import Web.DOM.DOMTokenList (contains, DOMTokenList)
 import Web.DOM.Element (Element, classList, clientHeight, clientWidth, fromNode)
+import Web.DOM.Element as Element
 import Web.DOM.Node (Node)
 import Web.DOM.NodeList (toArray)
 import Web.DOM.ParentNode (ParentNode, QuerySelector(..), querySelector, querySelectorAll)
 import Web.HTML (HTMLElement, window)
-import Web.HTML.HTMLDocument (toParentNode)
+import Web.HTML.HTMLDocument as HTMLDocument
 import Web.HTML.HTMLElement (fromElement, getBoundingClientRect)
 import Web.HTML.Window (document)
 
 coordsToSquare :: CoordinatePair -> MaybeT Effect Square
 coordsToSquare coords = do
-   doc <- lift $ window >>= document <#> toParentNode
+   doc <- lift $ window >>= document <#> HTMLDocument.toParentNode
    board <- getBoardElement doc
    htmlBoard <- MaybeT <<< pure $ fromElement board
    bCoords <- lift $ boardCoords htmlBoard
@@ -63,9 +64,10 @@ getOrientation doc = do
 
 getCurrentPosition :: MaybeT Effect SimplePosition
 getCurrentPosition = do
-   doc <- lift $ window >>= document <#> toParentNode
-   bSize <- getBoardElement doc >>= (lift <<< getBoardSize)
-   piecesNodes <- lift $ querySelectorAll (QuerySelector "piece") doc >>= toArray :: MaybeT Effect (Array Node)
+   doc <- lift $ window >>= document <#> HTMLDocument.toParentNode
+   board <- getBoardElement doc
+   bSize <- lift <<< getBoardSize $ board
+   piecesNodes <- lift $ querySelectorAll (QuerySelector "piece") (Element.toParentNode board) >>= toArray :: MaybeT Effect (Array Node)
    piecesElements <- traverse (MaybeT <<< pure <<< fromNode) piecesNodes :: MaybeT Effect (Array Element)
    maybePieces <- lift <<< sequence $ (runMaybeT <<< pieceFromElement bSize) <$> piecesElements 
    let pieces = catMaybes maybePieces
