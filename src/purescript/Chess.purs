@@ -65,20 +65,6 @@ derive instance eqSquare :: Eq Square
 instance showSquare :: Show Square where
   show = genericShow
 
-oppositeSquare :: Square -> Square
-oppositeSquare (Square f r) = Square (oppositeFile f) (9 - r)
-
-oppositeFile :: File -> File
-oppositeFile 'a' = 'h'
-oppositeFile 'b' = 'g'
-oppositeFile 'c' = 'f'
-oppositeFile 'd' = 'e'
-oppositeFile 'e' = 'd'
-oppositeFile 'f' = 'c'
-oppositeFile 'g' = 'b'
-oppositeFile 'h' = 'a'
-oppositeFile _ = 'x'
-
 
 data PieceOnBoard = PieceOnBoard PlayerPiece Square
 
@@ -104,5 +90,5 @@ findPossibleMoveTargets c p dest pos =
   let
       possiblePieces = filter (\(PieceOnBoard (PlayerPiece _ piece) _) -> piece == p) $ if c == White then pos.white else pos.black
    in
-    take 1 possiblePieces -- TODO: this is temp
+    take 1 possiblePieces -- TODO: real logic
 

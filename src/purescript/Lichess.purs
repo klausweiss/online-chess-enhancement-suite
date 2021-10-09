@@ -2,8 +2,8 @@ module Lichess where
 
 import Prelude
 
-import BoardGeometry (Orientation(..), Size2d, xToFile, yToRank)
-import Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findPossibleMoveTargets, makeSimplePosition, oppositeSquare)
+import BoardGeometry (Orientation(..), Size2d, getSquareCenterCoords, xToFile, yToRank, oppositeSquare)
+import Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findPossibleMoveTargets, makeSimplePosition)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
 import Data.Array (catMaybes, find, head)
@@ -16,17 +16,22 @@ import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
 import Effect.Console (log)
+import OCSE.Lichess.Plugin as Plugin
 import Signal.DOM (CoordinatePair)
 import Web.DOM.DOMTokenList (contains, DOMTokenList)
-import Web.DOM.Element (Element, classList, clientHeight, clientWidth, fromNode, getAttribute)
+import Web.DOM.Element (Element, classList, clientHeight, clientWidth, fromNode, getAttribute, toEventTarget)
 import Web.DOM.Element as Element
 import Web.DOM.Node (Node)
 import Web.DOM.NodeList (toArray)
 import Web.DOM.ParentNode (ParentNode, QuerySelector(..), querySelector, querySelectorAll)
+import Web.Event.EventTarget (dispatchEvent)
 import Web.HTML (HTMLElement, window)
 import Web.HTML.HTMLDocument as HTMLDocument
 import Web.HTML.HTMLElement (fromElement, getBoundingClientRect)
 import Web.HTML.Window (document)
+import Web.UIEvent.MouseEvent as MouseEvent
+import Web.UIEvent.MouseEvent.Constructors (makeMouseEvent)
+import Web.UIEvent.MouseEvent.EventTypes (mousedown, mouseup)
 
 coordsToSquare :: CoordinatePair -> MaybeT Effect Square
 coordsToSquare coords = do
@@ -144,13 +149,22 @@ makeAMove from to = do
    doc <- lift $ window >>= document <#> HTMLDocument.toParentNode
    board <- getBoardElement doc
    orientation <- getOrientation doc
+
+   clickSquare orientation board from
+   clickSquare orientation board to
+
+clickSquare :: Orientation -> Element -> Square -> MaybeT Effect Unit
+clickSquare orient board square = do
    boardSize <- lift $ getBoardSize board
-
-   clickSquare orientation boardSize from
-   clickSquare orientation boardSize to
-
-clickSquare :: Orientation -> Size2d -> Square -> MaybeT Effect Unit
-clickSquare orient boardSize square = do
+   htmlBoard <- MaybeT <<< pure $ fromElement board
+   bCoords <- lift $ boardCoords htmlBoard
+   let squareCoords = getSquareCenterCoords boardSize orient square
+   let absoluteCoords = squareCoords + bCoords
+   let mouseEvent evtype = MouseEvent.toEvent $ makeMouseEvent evtype absoluteCoords.x absoluteCoords.y
+   let boardTarget = toEventTarget board
+   let mouseEventAtPoint evtype = lift $ dispatchEvent (mouseEvent evtype) boardTarget
+   _triggeredDown <- mouseEventAtPoint mousedown
+   _triggeredUp <- mouseEventAtPoint mouseup
    lift $ log $ "clicking " <> show square
    pure unit
 
@@ -166,4 +180,7 @@ moveRandomPieceToSquare p dest = do
    (PieceOnBoard _ source) <- MaybeT $ pure $ head possibleTargets
    makeAMove source dest
 
+
+enablePlugin :: Effect Unit
+enablePlugin = Plugin.enablePlugin
 

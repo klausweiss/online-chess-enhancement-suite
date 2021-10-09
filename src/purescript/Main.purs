@@ -97,11 +97,5 @@ main = do
   let sig = (PointAtSquare <$> pointAtSquareSignal')
          <> (MovePiece <$> movePiecesSignal')
   _ <- foldEffect processSignal initialState sig :: Effect (Signal State)
-  log "ok go"
+  Lichess.enablePlugin
 
-
--- notes:
--- - clicking on a piece in lichess:
---   - click on the board element, by triggering a click MouseEvent, bubble: true
---   - get the board element from document.elementFromPoint
---   - 
