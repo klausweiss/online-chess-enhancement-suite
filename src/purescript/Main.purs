@@ -4,16 +4,16 @@ import Prelude
 
 import Chess (Piece(..), Square)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
-import Control.Monad.Trans.Class (lift)
 import Data.Enum (upFromIncluding)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Console (log)
-import Keyboard (Keycode, keycodeFor, shiftKey)
+import Keyboard (Keycode, keycodeFor, shiftKey, altKey)
 import Lichess as Lichess
 import Signal (Signal, constant, filter, mergeMany, (~>), unwrap)
-import Signal.DOM (keyPressed, mousePos, CoordinatePair)
+import Signal.DOM (mousePos, CoordinatePair)
+import Signal.DOM.Prevented (keyPressed)
 import Signal.Effect (foldEffect)
 
 
@@ -33,7 +33,7 @@ defaultKeymap =
       pieceKey Knight = keycodeFor 's' 
       pieceKey Bishop = keycodeFor 'd' 
       pieceKey King = shiftKey
-      pieceKey Queen = keycodeFor ' ' 
+      pieceKey Queen = altKey
    in
   { pieceKey: pieceKey
   -- TODO: a data type for the below
@@ -52,7 +52,7 @@ newtype Config = Config Keymap
 movePieceSignal :: Keymap -> Piece -> Effect (Signal Piece)
 movePieceSignal km p = do
   let key = km.pieceKey p
-  keyPressSignal <- keyPressed key
+  keyPressSignal <- keyPressed true key
   let isKeyDown = eq true
   -- TODO: keyUp for keys which support it
   pure (const p <$> filter isKeyDown true keyPressSignal) -- only keydowns, true is essential for SHIFT to work

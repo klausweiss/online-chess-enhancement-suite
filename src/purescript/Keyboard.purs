@@ -42,3 +42,6 @@ shiftKey = 16
 
 ctrlKey :: Keycode
 ctrlKey = 17
+
+altKey :: Keycode
+altKey = 18
