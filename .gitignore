@@ -9,6 +9,7 @@ node_modules
 .psci_modules
 .spago
 bower_components
+.psc-ide-port
 
 # Generated files
 .psci
