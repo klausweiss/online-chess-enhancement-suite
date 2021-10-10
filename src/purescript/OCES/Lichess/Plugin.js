@@ -20,9 +20,8 @@ function load(script) {
   document.body.appendChild(script);
 }
 
-function mk(text, defer) {
+function mk(text) {
   let script = document.createElement("script");
-  if (defer != undefined) script.setAttribute("defer", defer);
   script.innerHTML = text;
   return mark(script);
 }
