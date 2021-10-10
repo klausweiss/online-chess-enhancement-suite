@@ -90,5 +90,5 @@ findPossibleMoveTargets c p dest pos =
   let
       possiblePieces = filter (\(PieceOnBoard (PlayerPiece _ piece) _) -> piece == p) $ if c == White then pos.white else pos.black
    in
-    take 1 possiblePieces -- TODO: real logic
+    possiblePieces -- TODO: real logic
 

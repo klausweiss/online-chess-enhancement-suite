@@ -2,16 +2,15 @@ module Main where
 
 import Prelude
 
-import Chess (Piece(..), Square)
-import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
+import Chess (Piece(..))
+import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Enum (upFromIncluding)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (fromMaybe)
 import Data.Traversable (traverse)
 import Effect (Effect)
-import Effect.Console (log)
 import Keyboard (Keycode, keycodeFor, shiftKey, altKey)
 import Lichess as Lichess
-import Signal (Signal, constant, filter, mergeMany, (~>), unwrap)
+import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
 import Signal.DOM.Prevented (keyPressed)
 import Signal.Effect (foldEffect)
@@ -44,7 +43,7 @@ defaultKeymap =
   }
 
 type State = 
-  { squareUnderPointer :: Maybe Square
+  { pointerPosition :: CoordinatePair
   }
 
 newtype Config = Config Keymap
@@ -66,35 +65,30 @@ movePiecesSignal km = let
     mergedSignals <- mergeMany <$> allSignals
     pure $ fromMaybe (constant King) mergedSignals
 
-pointAtSquareSignal :: (CoordinatePair -> Effect (Maybe Square)) -> Effect (Signal (Maybe Square))
-pointAtSquareSignal coordsToSquare = do
-  mouseSignal <- mousePos
-  unwrap (mouseSignal ~> coordsToSquare)
-
 
 data AppSignal 
   = MovePiece Piece
-  | PointAtSquare (Maybe Square)
+  | MovePointer CoordinatePair
 
 processSignal :: AppSignal -> State -> Effect State
 processSignal (MovePiece p) s = movePiece p s
-processSignal (PointAtSquare ms) s = do
-  pure $ s { squareUnderPointer = ms }
+processSignal (MovePointer coords) s = do
+  pure $ s { pointerPosition = coords }
 
 movePiece :: Piece -> State -> Effect State
 movePiece piece state = do
   _ <- runMaybeT $ do
-     square <- MaybeT $ pure $ state.squareUnderPointer
+     square <- Lichess.coordsToSquare state.pointerPosition
      Lichess.moveRandomPieceToSquare piece square
   pure state
 
 main :: Effect Unit
 main = do
   let keymap = defaultKeymap
-  let initialState = {squareUnderPointer: Nothing}
+  let initialState = { pointerPosition: {x: 0, y: 0} }
   movePiecesSignal' <- movePiecesSignal keymap
-  pointAtSquareSignal' <- pointAtSquareSignal (runMaybeT <<< Lichess.coordsToSquare)
-  let sig = (PointAtSquare <$> pointAtSquareSignal')
+  movePointerSignal' <- mousePos
+  let sig = (MovePointer <$> movePointerSignal')
          <> (MovePiece <$> movePiecesSignal')
   _ <- foldEffect processSignal initialState sig :: Effect (Signal State)
   Lichess.enablePlugin
