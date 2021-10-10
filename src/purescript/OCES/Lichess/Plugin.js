@@ -1,52 +1,94 @@
 "use strict";
 
-function allowOCES(text, parent) {
+function allowOCES(text) {
   let ostrichRe = /\!\w+\..strus.../i;
 	let ostrich = text.search(ostrichRe);
 	let shouldAllow = ostrich > -1;
-  let newScript = document.createElement("script");
-  newScript.innerHTML = text.replace(ostrichRe, (match, offset, string, groups) => {
+  let modifiedText = text.replace(ostrichRe, (match, offset, string, groups) => {
     let target = match.match(/\!(\w+)\./)[1];
     return `(false)`;
   });
-  return newScript;
+  return mk(modifiedText);
 }
 
+function rm(script) {
+  let parent = script.parentNode;
+  parent.removeChild(script);
+}
+
+function load(script) {
+  document.body.appendChild(script);
+}
+
+function mk(text, defer) {
+  let script = document.createElement("script");
+  if (defer != undefined) script.setAttribute("defer", defer);
+  script.innerHTML = text;
+  return mark(script);
+}
+
+function hasScripts(mutation) {
+  return mutation.addedNodes[0] && 
+    mutation.addedNodes[0].tagName && 
+    mutation.addedNodes[0].tagName.toLowerCase() === "script";
+}
+
+function isExternal(script) {
+  return script.hasAttribute("src");
+}
+
+function mark(script) {
+  script.setAttribute("oces", 1);
+  return script;
+}
+
+function isMarked(script) {
+  return script.getAttribute("oces") == 1;
+}
+
+function windowOnLoad() {
+  load(mk("window.onload();"));
+}
 
 exports.enablePlugin = function () {
+  var nonces = 0;
+  let promises = [];
+  let afterScriptsProcessed = function() {
+    Promise.all(promises)
+    .then((result) => {
+      result.forEach((script) => {
+        load(script);
+      });
+      windowOnLoad();
+    });
+  };
   let observer = new MutationObserver((mutations, observer) => {
-    let promises = [];
     mutations.forEach((mutation) => {
-      if (
-        mutation.addedNodes[0] &&
-        mutation.addedNodes[0].tagName &&
-        mutation.addedNodes[0].tagName.toLowerCase() === 'script'
-      ) {
+      if (hasScripts(mutation)) {
         let script = mutation.addedNodes[0];
-        let parent = script.parentNode;
-        if (script.hasAttribute("src")) {
-          parent.removeChild(script);
-          console.log(`loading ${script.src}`);
-          let promise = fetch(script.src)
-            .then((response) => response.text())
-            .then((text) => {
-              let newScript = allowOCES(text, parent);
-              return [newScript, script, parent];
+        if (isMarked(script)) return;
+        rm(script);
+        var promise;
+        if (isExternal(script)) {
+          promise = fetch(script.src)
+            .then((r) => r.text())
+            .then((t) => {
+              return allowOCES(t);
             });
-          promises.push(promise);
+        }
+        else {
+          promise = new Promise((ok, fail) => ok(mark(script)));
+        }
+        promises.push(promise);
+        if (script.getAttribute("nonce") != null) {
+          nonces += 1;
+          if (nonces == 2) {  // the last script on page is the second script with a "nonce" attribute
+            observer.disconnect();
+            afterScriptsProcessed();
+          }
         }
       }
     });
-    Promise.all(promises)
-      .then((result) => {
-        result.forEach((r) => {
-          const [newScript, script, parent] = r;
-          // TODO: resolve race condition
-          parent.appendChild(newScript);
-          observer.disconnect();
-          console.log(`loaded ${script.src}`);
-        });
-      });
   });
   observer.observe(document.documentElement, {
     childList: true,
