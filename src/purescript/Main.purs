@@ -2,14 +2,14 @@ module Main where
 
 import Prelude
 
-import Chess (Piece(..))
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Enum (upFromIncluding)
 import Data.Maybe (fromMaybe)
 import Data.Traversable (traverse)
 import Effect (Effect)
-import Keyboard (Keycode, keycodeFor, shiftKey, altKey)
-import Lichess as Lichess
+import OCES.Chess (Piece(..))
+import OCES.Keyboard (Keycode, keycodeFor, shiftKey, altKey)
+import OCES.Lichess as Lichess
 import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
 import Signal.DOM.Prevented (keyPressed)

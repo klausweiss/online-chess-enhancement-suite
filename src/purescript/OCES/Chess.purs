@@ -1,8 +1,8 @@
-module Chess where
+module OCES.Chess where
 
 import Prelude
 
-import Data.Array (filter, partition, take)
+import Data.Array (filter, partition)
 import Data.Bounded.Generic (genericTop, genericBottom)
 import Data.Enum (class Enum)
 import Data.Enum.Generic (genericPred, genericSucc)

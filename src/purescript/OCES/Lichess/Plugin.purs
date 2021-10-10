@@ -1,4 +1,4 @@
-module OCSE.Lichess.Plugin where
+module OCES.Lichess.Plugin where
 
 import Prelude
 

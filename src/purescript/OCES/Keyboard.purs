@@ -1,4 +1,4 @@
-module Keyboard where
+module OCES.Keyboard where
 
 import Prelude (negate)
 

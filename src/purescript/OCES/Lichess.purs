@@ -1,9 +1,9 @@
-module Lichess where
+module OCES.Lichess where
 
 import Prelude
 
-import BoardGeometry (Orientation(..), Size2d, getSquareCenterCoords, xToFile, yToRank, oppositeSquare)
-import Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findPossibleMoveTargets, makeSimplePosition)
+import OCES.BoardGeometry (Orientation(..), Size2d, getSquareCenterCoords, xToFile, yToRank, oppositeSquare)
+import OCES.Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findPossibleMoveTargets, makeSimplePosition)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
 import Data.Array (catMaybes, find, head)
@@ -16,7 +16,7 @@ import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
 import Effect.Console (log)
-import OCSE.Lichess.Plugin as Plugin
+import OCES.Lichess.Plugin as Plugin
 import Signal.DOM (CoordinatePair)
 import Web.DOM.DOMTokenList (contains, DOMTokenList)
 import Web.DOM.Element (Element, classList, clientHeight, clientWidth, fromNode, getAttribute, toEventTarget)

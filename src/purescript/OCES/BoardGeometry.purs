@@ -1,9 +1,9 @@
-module BoardGeometry where
+module OCES.BoardGeometry where
 
 import Prelude
 
-import Chess (File, Rank, Square(..))
 import Data.Maybe (Maybe(..), fromMaybe)
+import OCES.Chess (File, Rank, Square(..))
 
 
 type Size2d = {width :: Int, height :: Int}
