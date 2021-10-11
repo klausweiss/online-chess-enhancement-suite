@@ -2,12 +2,17 @@ module Main where
 
 import Prelude
 
-import Control.Monad.Maybe.Trans (runMaybeT)
-import Data.Enum (upFromIncluding)
-import Data.Maybe (fromMaybe)
+import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
+import Control.Monad.Trans.Class (lift)
+import Data.Array (nub)
+import Data.Enum (class Enum, upFromIncluding)
+import Data.Map (Map, fromFoldable, lookup)
+import Data.Maybe (Maybe, fromMaybe)
 import Data.Traversable (traverse)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import OCES.Chess (Piece(..))
+import OCES.Disambiguation (DisambiguationDirection(..))
 import OCES.Keyboard (Keycode, keycodeFor, shiftKey, altKey)
 import OCES.Lichess as Lichess
 import Signal (Signal, constant, filter, mergeMany)
@@ -18,10 +23,7 @@ import Signal.Effect (foldEffect)
 
 type Keymap =
   { pieceKey :: Piece -> Keycode
-  , topPiece :: Keycode
-  , bottomPiece :: Keycode
-  , leftPiece :: Keycode
-  , rightPiece :: Keycode
+  , disambiguationKey :: DisambiguationDirection -> Keycode
   }
 
 
@@ -33,47 +35,78 @@ defaultKeymap =
       pieceKey Bishop = keycodeFor 'd' 
       pieceKey King = shiftKey
       pieceKey Queen = altKey
+      disambiguationKey Top = keycodeFor 'w'
+      disambiguationKey Bottom = keycodeFor 's'
+      disambiguationKey Left = keycodeFor 'a'
+      disambiguationKey Right = keycodeFor 'd'
    in
   { pieceKey: pieceKey
-  -- TODO: a data type for the below
-  , topPiece: keycodeFor 'w'
-  , bottomPiece: keycodeFor 's'
-  , leftPiece: keycodeFor 'a'
-  , rightPiece: keycodeFor 'd'
+  , disambiguationKey : disambiguationKey
   }
+
+reverseMap :: forall e k. Enum e => Bounded e => Ord k => (e -> k) -> k -> Maybe e
+reverseMap enumToKey = 
+  let
+      allEnums = upFromIncluding bottom :: Array e
+      keysMap = fromFoldable $ (\e -> Tuple (enumToKey e) e) <$> allEnums :: Map k e
+   in
+    (flip lookup) keysMap
+
+data ExpectedInput
+  = PieceKey
+  | DisambiguationKey
+
+derive instance eqExpectedInput :: Eq ExpectedInput
+
 
 type State = 
   { pointerPosition :: CoordinatePair
+  , expectedInput :: ExpectedInput
   }
 
 newtype Config = Config Keymap
 
-movePieceSignal :: Keymap -> Piece -> Effect (Signal Piece)
-movePieceSignal km p = do
-  let key = km.pieceKey p
-  keyPressSignal <- keyPressed true key
-  let isKeyDown = eq true
+keySignal :: Keycode -> Effect (Signal Keycode)
+keySignal key = do
+  signal <- keyPressed true key 
   -- TODO: keyUp for keys which support it
-  pure (const p <$> filter isKeyDown true keyPressSignal) -- only keydowns, true is essential for SHIFT to work
+  let isKeyDown = eq true
+  pure $ const key <$> filter isKeyDown true signal -- only keydowns, true is essential for SHIFT to work
 
-movePiecesSignal :: Keymap -> Effect (Signal Piece)
-movePiecesSignal km = let
-      allPieces = upFromIncluding bottom 
-      allSignals :: Effect (Array (Signal Piece))
-      allSignals = traverse (movePieceSignal km) allPieces
-   in do
-    mergedSignals <- mergeMany <$> allSignals
-    pure $ fromMaybe (constant King) mergedSignals
+keymapSignals :: Keymap -> Effect (Signal Keycode)
+keymapSignals keymap = 
+  let
+      pieceKeys = keymap.pieceKey <$> upFromIncluding bottom
+      disambiguationKeys = keymap.disambiguationKey <$> upFromIncluding bottom
+      allKeys = nub $ pieceKeys <> disambiguationKeys
+      allSignals = traverse keySignal allKeys
+  in do
+     mergedSignals <- mergeMany <$> allSignals
+     pure $ fromMaybe (constant (-1)) mergedSignals
 
 
 data AppSignal 
-  = MovePiece Piece
+  = KeyPressSignal Keycode
   | MovePointer CoordinatePair
 
-processSignal :: AppSignal -> State -> Effect State
-processSignal (MovePiece p) s = movePiece p s
-processSignal (MovePointer coords) s = do
-  pure $ s { pointerPosition = coords }
+processSignal :: Keymap -> AppSignal -> State -> Effect State
+processSignal keymap = 
+  let 
+    keyToPiece = reverseMap keymap.pieceKey
+    keyToDisambiguation = reverseMap keymap.disambiguationKey
+
+    processSignal' :: AppSignal -> State -> Effect State
+    processSignal' (KeyPressSignal key) s@{ expectedInput: PieceKey } = do
+      _ <- runMaybeT $ do
+        piece <- MaybeT $ pure $ keyToPiece key
+        lift $ movePiece piece s
+      pure $ s
+    processSignal' (KeyPressSignal key) s@{ expectedInput: DisambiguationKey } = do
+      pure $ s
+    processSignal' (MovePointer coords) s = do
+      pure $ s { pointerPosition = coords }
+
+   in processSignal'
 
 movePiece :: Piece -> State -> Effect State
 movePiece piece state = do
@@ -85,11 +118,13 @@ movePiece piece state = do
 main :: Effect Unit
 main = do
   let keymap = defaultKeymap
-  let initialState = { pointerPosition: {x: 0, y: 0} }
-  movePiecesSignal' <- movePiecesSignal keymap
+  let initialState = { pointerPosition: {x: 0, y: 0}
+                     , expectedInput: PieceKey
+                     }
+  keymapSignals' <- keymapSignals keymap
   movePointerSignal' <- mousePos
   let sig = (MovePointer <$> movePointerSignal')
-         <> (MovePiece <$> movePiecesSignal')
-  _ <- foldEffect processSignal initialState sig :: Effect (Signal State)
+         <> (KeyPressSignal <$> keymapSignals')
+  _ <- foldEffect (processSignal keymap) initialState sig :: Effect (Signal State)
   Lichess.enablePlugin
 

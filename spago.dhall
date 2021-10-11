@@ -19,6 +19,7 @@ to generate this file without the comments in this block.
   , "foldable-traversable"
   , "integers"
   , "maybe"
+  , "ordered-collections"
   , "prelude"
   , "psci-support"
   , "signal"
