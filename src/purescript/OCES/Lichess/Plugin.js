@@ -8,22 +8,28 @@ function allowOCES(text) {
     let target = match.match(/\!(\w+)\./)[1];
     return `(false)`;
   });
-  return mk(modifiedText);
+  return script(modifiedText);
 }
 
-function rm(script) {
-  let parent = script.parentNode;
-  parent.removeChild(script);
+function rm(node) {
+  let parent = node.parentNode;
+  parent.removeChild(node);
 }
 
-function load(script) {
-  document.body.appendChild(script);
+function load(node) {
+  document.body.appendChild(node);
 }
 
-function mk(text) {
-  let script = document.createElement("script");
-  script.innerHTML = text;
-  return mark(script);
+function script(text) {
+  let scriptNode = document.createElement("script");
+  scriptNode.innerHTML = text;
+  return mark(scriptNode);
+}
+
+function css(text) {
+  let styleNode = document.createElement("style");
+  styleNode.innerHTML = text;
+  return styleNode;
 }
 
 function hasScripts(mutation) {
@@ -32,21 +38,22 @@ function hasScripts(mutation) {
     mutation.addedNodes[0].tagName.toLowerCase() === "script";
 }
 
-function isExternal(script) {
-  return script.hasAttribute("src");
+function isExternal(node) {
+  return node.hasAttribute("src");
 }
 
-function mark(script) {
-  script.setAttribute("oces", 1);
-  return script;
+function mark(node) {
+  node.setAttribute("oces", 1);
+  return node;
 }
 
-function isMarked(script) {
-  return script.getAttribute("oces") == 1;
+function isMarked(node) {
+  return node.getAttribute("oces") == 1;
 }
 
 function windowOnLoad() {
-  load(mk("window.onload();"));
+  load(css(".oces-highlighted { background-color: #89dae7; }"));
+  load(script("window.onload();"));
 }
 
 exports.enablePlugin = function () {
@@ -55,8 +62,8 @@ exports.enablePlugin = function () {
   let afterScriptsProcessed = function() {
     Promise.all(promises)
     .then((result) => {
-      result.forEach((script) => {
-        load(script);
+      result.forEach((scriptNode) => {
+        load(scriptNode);
       });
       windowOnLoad();
     });
@@ -64,22 +71,22 @@ exports.enablePlugin = function () {
   let observer = new MutationObserver((mutations, observer) => {
     mutations.forEach((mutation) => {
       if (hasScripts(mutation)) {
-        let script = mutation.addedNodes[0];
-        if (isMarked(script)) return;
-        rm(script);
+        let scriptNode = mutation.addedNodes[0];
+        if (isMarked(scriptNode)) return;
+        rm(scriptNode);
         var promise;
-        if (isExternal(script)) {
-          promise = fetch(script.src)
+        if (isExternal(scriptNode)) {
+          promise = fetch(scriptNode.src)
             .then((r) => r.text())
             .then((t) => {
               return allowOCES(t);
             });
         }
         else {
-          promise = new Promise((ok, fail) => ok(mark(script)));
+          promise = new Promise((ok, fail) => ok(mark(scriptNode)));
         }
         promises.push(promise);
-        if (script.getAttribute("nonce") != null) {
+        if (scriptNode.getAttribute("nonce") != null) {
           nonces += 1;
           if (nonces == 2) {  // the last script on page is the second script with a "nonce" attribute
             observer.disconnect();

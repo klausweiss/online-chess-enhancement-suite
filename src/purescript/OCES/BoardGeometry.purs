@@ -3,7 +3,7 @@ module OCES.BoardGeometry where
 import Prelude
 
 import Data.Maybe (Maybe(..), fromMaybe)
-import OCES.Chess (File, Rank, Square(..))
+import OCES.Chess (File, Rank, Square(..), charToRank, rankToChar)
 
 
 type Size2d = {width :: Int, height :: Int}
@@ -17,28 +17,6 @@ yToRank height y = let
 
 xToFile :: Int -> Int -> Maybe File
 xToFile width y = yToRank width y >>= rankToChar
-
-rankToChar :: Int -> Maybe Char
-rankToChar 1 = Just 'a'
-rankToChar 2 = Just 'b'
-rankToChar 3 = Just 'c'
-rankToChar 4 = Just 'd'
-rankToChar 5 = Just 'e'
-rankToChar 6 = Just 'f'
-rankToChar 7 = Just 'g'
-rankToChar 8 = Just 'h'
-rankToChar _ = Nothing
-
-charToRank :: Char -> Maybe Int
-charToRank 'a' = Just 1
-charToRank 'b' = Just 2
-charToRank 'c' = Just 3
-charToRank 'd' = Just 4
-charToRank 'e' = Just 5
-charToRank 'f' = Just 6
-charToRank 'g' = Just 7
-charToRank 'h' = Just 8
-charToRank _ = Nothing
 
 fileToRank :: Char -> Int
 fileToRank = fromMaybe (-1) <<< charToRank

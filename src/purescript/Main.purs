@@ -10,9 +10,11 @@ import Data.Map (Map, fromFoldable, lookup)
 import Data.Maybe (Maybe, fromMaybe)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
+import Data.Unfoldable as Unfoldable
 import Effect (Effect)
-import OCES.Chess (Piece(..))
-import OCES.Disambiguation (DisambiguationDirection(..))
+import Effect.Console (logShow)
+import OCES.Chess (PieceOnBoard(..), Piece(..), Square)
+import OCES.Disambiguation (DisambiguationDirection(..), filterByDirection)
 import OCES.Keyboard (Keycode, keycodeFor, shiftKey, altKey)
 import OCES.Lichess as Lichess
 import Signal (Signal, constant, filter, mergeMany)
@@ -52,16 +54,16 @@ reverseMap enumToKey =
    in
     (flip lookup) keysMap
 
-data ExpectedInput
-  = PieceKey
-  | DisambiguationKey
+data InputState
+  = NoInputYet
+  | DisambiguationNeeded (Array PieceOnBoard)
 
-derive instance eqExpectedInput :: Eq ExpectedInput
+derive instance eqInputState :: Eq InputState
 
 
 type State = 
   { pointerPosition :: CoordinatePair
-  , expectedInput :: ExpectedInput
+  , inputState :: InputState
   }
 
 newtype Config = Config Keymap
@@ -96,30 +98,48 @@ processSignal keymap =
     keyToDisambiguation = reverseMap keymap.disambiguationKey
 
     processSignal' :: AppSignal -> State -> Effect State
-    processSignal' (KeyPressSignal key) s@{ expectedInput: PieceKey } = do
-      _ <- runMaybeT $ do
-        piece <- MaybeT $ pure $ keyToPiece key
-        lift $ movePiece piece s
-      pure $ s
-    processSignal' (KeyPressSignal key) s@{ expectedInput: DisambiguationKey } = do
-      pure $ s
+    processSignal' (KeyPressSignal key) state@{ inputState: NoInputYet } = do 
+       Lichess.dimHighlights
+       possibleMoves <- join <<< Unfoldable.fromMaybe <$> (runMaybeT $ do
+         piece <- MaybeT $ pure $ keyToPiece key
+         square <- Lichess.coordsToSquare state.pointerPosition
+         Lichess.findPossibleMoves piece square
+         ) :: Effect (Array PieceOnBoard)
+       handlePossibleMoves state possibleMoves
+    -- TODO: reset disambiguation using ESC (customizable)
+    processSignal' (KeyPressSignal key) state@{ inputState: DisambiguationNeeded possibleMoves } = do
+       Lichess.dimHighlights
+       newPossibleMoves <- fromMaybe possibleMoves <$> (runMaybeT $ do
+          dir <- MaybeT $ pure $ keyToDisambiguation key
+          orientation <- Lichess.getOrientation
+          pure $ filterByDirection orientation dir possibleMoves)
+       handlePossibleMoves state newPossibleMoves
     processSignal' (MovePointer coords) s = do
-      pure $ s { pointerPosition = coords }
+       pure $ s { pointerPosition = coords }
+
+    handlePossibleMoves :: State -> Array PieceOnBoard -> Effect State
+    handlePossibleMoves state [] = pure state
+    handlePossibleMoves state [(PieceOnBoard _ source)] = do
+       _ <- runMaybeT $ do
+         dest <- Lichess.coordsToSquare state.pointerPosition
+         lift $ movePiece source dest
+       pure state { inputState = NoInputYet }
+    handlePossibleMoves state moves = do
+      Lichess.highlightSquares moves
+      pure $ state { inputState = DisambiguationNeeded moves }
 
    in processSignal'
 
-movePiece :: Piece -> State -> Effect State
-movePiece piece state = do
-  _ <- runMaybeT $ do
-     square <- Lichess.coordsToSquare state.pointerPosition
-     Lichess.moveRandomPieceToSquare piece square
-  pure state
+movePiece :: Square -> Square -> Effect Unit
+movePiece from to = do
+  _ <- runMaybeT $ Lichess.makeAMove from to
+  pure unit
 
 main :: Effect Unit
 main = do
   let keymap = defaultKeymap
   let initialState = { pointerPosition: {x: 0, y: 0}
-                     , expectedInput: PieceKey
+                     , inputState: NoInputYet
                      }
   keymapSignals' <- keymapSignals keymap
   movePointerSignal' <- mousePos

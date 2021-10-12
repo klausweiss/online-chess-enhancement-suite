@@ -26,6 +26,7 @@ to generate this file without the comments in this block.
   , "strings"
   , "transformers"
   , "tuples"
+  , "unfoldable"
   , "web-dom"
   , "web-events"
   , "web-html"

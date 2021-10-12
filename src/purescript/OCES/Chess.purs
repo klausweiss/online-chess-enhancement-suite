@@ -7,6 +7,7 @@ import Data.Bounded.Generic (genericTop, genericBottom)
 import Data.Enum (class Enum)
 import Data.Enum.Generic (genericPred, genericSucc)
 import Data.Generic.Rep (class Generic)
+import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 
 
@@ -64,6 +65,29 @@ derive instance genericSquare :: Generic Square _
 derive instance eqSquare :: Eq Square
 instance showSquare :: Show Square where
   show = genericShow
+
+rankToChar :: Int -> Maybe Char
+rankToChar 1 = Just 'a'
+rankToChar 2 = Just 'b'
+rankToChar 3 = Just 'c'
+rankToChar 4 = Just 'd'
+rankToChar 5 = Just 'e'
+rankToChar 6 = Just 'f'
+rankToChar 7 = Just 'g'
+rankToChar 8 = Just 'h'
+rankToChar _ = Nothing
+
+charToRank :: Char -> Maybe Int
+charToRank 'a' = Just 1
+charToRank 'b' = Just 2
+charToRank 'c' = Just 3
+charToRank 'd' = Just 4
+charToRank 'e' = Just 5
+charToRank 'f' = Just 6
+charToRank 'g' = Just 7
+charToRank 'h' = Just 8
+charToRank _ = Nothing
+
 
 
 data PieceOnBoard = PieceOnBoard PlayerPiece Square
