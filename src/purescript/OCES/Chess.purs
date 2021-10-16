@@ -7,9 +7,10 @@ import Data.Bounded.Generic (genericTop, genericBottom)
 import Data.Char (fromCharCode, toCharCode)
 import Data.Enum (class Enum)
 import Data.Enum.Generic (genericPred, genericSucc)
+import Data.Foldable (find)
 import Data.Generic.Rep (class Generic)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
 import Data.Ord (abs)
 import Data.Show.Generic (genericShow)
 import Data.Tuple (Tuple(..))
@@ -144,10 +145,12 @@ indexSquare (Square f r) = IndexSquare (fileToIndex f) (rankToIndex r)
 
 -- assumes white color
 canPieceMoveToSquare :: IndexSquare -> IndexSquare -> Piece -> SimplePosition -> Boolean
-canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Pawn pos = 
-  case fromFile, toFile of 
-       f, t | f == t -> (fromRank == 1 && toRank == 3) || (toRank - fromRank) == 1
-       f, t | abs (f - t) == 1 -> (toRank - fromRank) == 1
+canPieceMoveToSquare (IndexSquare fromFile fromRank) to@(IndexSquare toFile toRank) Pawn pos = 
+  let 
+      occupied = isOccupied to pos 
+   in case fromFile, toFile of 
+       f, t | f == t -> (fromRank == 1 && toRank == 3) || (toRank - fromRank) == 1 && not occupied
+       f, t | abs (f - t) == 1 -> (toRank - fromRank) == 1 && occupied
        _, _ -> false
 canPieceMoveToSquare f@(IndexSquare fromFile fromRank) t@(IndexSquare toFile toRank) Rook pos 
   | (fromFile == toFile || fromRank == toRank) = nothingBetween f t pos
@@ -185,3 +188,7 @@ nextSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) | abs (to
                                                                            nextRank = (fromRank + (if toRank > fromRank then 1 else -1))
                                                                         in Just $ IndexSquare nextFile nextRank
 nextSquare _ _ = Nothing
+
+isOccupied :: IndexSquare -> SimplePosition -> Boolean
+isOccupied s pos = isJust $ find (\bs -> bs == s) $ allPieces pos <#> (\(PieceOnBoard _ bs) -> indexSquare bs)
+
