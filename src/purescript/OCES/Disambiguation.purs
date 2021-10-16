@@ -32,9 +32,12 @@ instance boundedEnumDisambiguationDirection :: Enum DisambiguationDirection wher
   pred = genericPred
 
 
+horizontally :: PieceOnBoard -> Int
 horizontally (PieceOnBoard _ (Square file _rank)) = fileToIndex file
+vertically :: PieceOnBoard -> Int
 vertically (PieceOnBoard _ (Square _file rank)) = rankToIndex rank
 
+direction :: DisambiguationDirection -> PieceOnBoard -> Int
 direction Top = vertically 
 direction Right = horizontally 
 direction Bottom = vertically 
@@ -45,12 +48,12 @@ type ArrayPartition =
   , drop :: forall a. Int -> Array a -> Array a 
   }
 
+takePart :: DisambiguationDirection -> ArrayPartition
 takePart Top = { take: takeEnd, drop: dropEnd }
 takePart Right = { take: takeEnd, drop: dropEnd }
 takePart Bottom = { take: take, drop: drop }
 takePart Left = { take: take, drop: drop }
 
--- TODO: don't take the exact half, but also include the pieces with metric equal to the middle one
 filterByDirection :: Orientation -> DisambiguationDirection -> Array PieceOnBoard -> Array PieceOnBoard
 filterByDirection orient d pieces = 
   let piecesCnt = length pieces
