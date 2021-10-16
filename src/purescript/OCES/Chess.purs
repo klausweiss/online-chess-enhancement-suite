@@ -8,9 +8,11 @@ import Data.Char (fromCharCode, toCharCode)
 import Data.Enum (class Enum)
 import Data.Enum.Generic (genericPred, genericSucc)
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Ord (abs)
 import Data.Show.Generic (genericShow)
+import Data.Tuple (Tuple(..))
 
 
 data Piece 
@@ -113,6 +115,9 @@ makeSimplePosition pieces = let
     {yes: w, no: b} = partition (\(PieceOnBoard (PlayerPiece color _) _) -> color == White) pieces
   in { black: b, white: w }
 
+allPieces :: SimplePosition -> Array PieceOnBoard
+allPieces sp = sp.black <> sp.white
+
 
 findPossibleMoveTargets :: Color -> Piece -> Square -> SimplePosition -> Array PieceOnBoard
 findPossibleMoveTargets c p dest pos = 
@@ -131,10 +136,12 @@ type FileIndex = Int
 type RankIndex = Int
 data IndexSquare = IndexSquare FileIndex RankIndex
 
+derive instance eqIndexSquare :: Eq IndexSquare
+derive instance ordIndexSquare :: Ord IndexSquare
+
 indexSquare :: Square -> IndexSquare
 indexSquare (Square f r) = IndexSquare (fileToIndex f) (rankToIndex r)
 
--- TODO
 -- assumes white color
 canPieceMoveToSquare :: IndexSquare -> IndexSquare -> Piece -> SimplePosition -> Boolean
 canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Pawn pos = 
@@ -142,8 +149,39 @@ canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank)
        f, t | f == t -> (fromRank == 1 && toRank == 3) || (toRank - fromRank) == 1
        f, t | abs (f - t) == 1 -> (toRank - fromRank) == 1
        _, _ -> false
-canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Rook pos = true
-canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Knight pos = true
-canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Bishop pos = true
-canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) King pos = true
-canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Queen pos = true
+canPieceMoveToSquare f@(IndexSquare fromFile fromRank) t@(IndexSquare toFile toRank) Rook pos 
+  | (fromFile == toFile || fromRank == toRank) = nothingBetween f t pos
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Knight _
+  | (abs (fromFile - toFile) == 2 && abs (fromRank - toRank) == 1) 
+  || (abs (fromFile - toFile) == 1 && abs (fromRank - toRank) == 2) = true
+canPieceMoveToSquare f@(IndexSquare fromFile fromRank) t@(IndexSquare toFile toRank) Bishop pos 
+  | abs (fromFile - toFile) == abs(fromRank - toRank) = nothingBetween f t pos
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) King _ 
+  | abs (fromFile - toFile) <= 1 && abs (fromRank - toRank) <= 1 = true
+canPieceMoveToSquare f t Queen pos = canPieceMoveToSquare f t Rook pos || canPieceMoveToSquare f t Bishop pos
+canPieceMoveToSquare _ _ _ _ = false
+
+nothingBetween :: IndexSquare -> IndexSquare -> SimplePosition -> Boolean
+nothingBetween from to pos =
+  let
+      occupiedSquares = Map.fromFoldable $ allPieces pos <#> (\p@(PieceOnBoard _ s) -> Tuple (indexSquare s) p)
+      start = if from < to then from else to
+      end = if from > to then from else to
+      go f t | f == t = true
+      go f t = 
+        let 
+            maybeNs = nextSquare f t
+            isNsEnd = fromMaybe false $ (\ns -> ns == t) <$> maybeNs
+            isNsFree = fromMaybe false $ (\k -> not $ Map.member k occupiedSquares) <$> maybeNs
+         in isNsEnd || (isNsFree && maybe false (\ns' -> go ns' t) maybeNs)
+       in go start end
+
+nextSquare :: IndexSquare -> IndexSquare -> Maybe IndexSquare
+nextSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) | fromRank == toRank && fromFile < toFile = Just $ IndexSquare (fromFile + 1) fromRank
+nextSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) | fromFile == toFile && fromRank < toRank = Just $ IndexSquare fromFile (fromRank + 1)
+nextSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) | abs (toFile - fromFile) == abs (toRank - fromRank) = 
+                                                                       let
+                                                                           nextFile = (fromFile + (if toFile > fromFile then 1 else -1))
+                                                                           nextRank = (fromRank + (if toRank > fromRank then 1 else -1))
+                                                                        in Just $ IndexSquare nextFile nextRank
+nextSquare _ _ = Nothing
