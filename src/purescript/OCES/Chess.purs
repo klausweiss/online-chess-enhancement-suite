@@ -9,6 +9,7 @@ import Data.Enum (class Enum)
 import Data.Enum.Generic (genericPred, genericSucc)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
+import Data.Ord (abs)
 import Data.Show.Generic (genericShow)
 
 
@@ -79,6 +80,20 @@ rankFromIndex n = n + 1
 fileFromIndex :: Int -> Maybe File
 fileFromIndex n = fromCharCode (n + 97)
 
+oppositeSquare :: Square -> Square
+oppositeSquare (Square f r) = Square (oppositeFile f) (9 - r)
+
+oppositeFile :: File -> File
+oppositeFile 'a' = 'h'
+oppositeFile 'b' = 'g'
+oppositeFile 'c' = 'f'
+oppositeFile 'd' = 'e'
+oppositeFile 'e' = 'd'
+oppositeFile 'f' = 'c'
+oppositeFile 'g' = 'b'
+oppositeFile 'h' = 'a'
+oppositeFile _ = 'x'
+
 
 data PieceOnBoard = PieceOnBoard PlayerPiece Square
 
@@ -102,11 +117,33 @@ makeSimplePosition pieces = let
 findPossibleMoveTargets :: Color -> Piece -> Square -> SimplePosition -> Array PieceOnBoard
 findPossibleMoveTargets c p dest pos = 
   let
-      possiblePieces = filter (canMoveToSquare dest)
+      possiblePieces = filter (canMoveToSquare dest pos)
         $ filter (\(PieceOnBoard (PlayerPiece _ piece) _) -> piece == p) 
         $ if c == White then pos.white else pos.black
    in
-    possiblePieces -- TODO: real logic
+    possiblePieces
 
-canMoveToSquare :: Square -> PieceOnBoard -> Boolean
-canMoveToSquare s pob = true
+canMoveToSquare :: Square -> SimplePosition -> PieceOnBoard -> Boolean
+canMoveToSquare toSquare pos (PieceOnBoard (PlayerPiece White piece) fromSquare) = canPieceMoveToSquare (indexSquare $ fromSquare) (indexSquare $ toSquare) piece pos
+canMoveToSquare toSquare pos (PieceOnBoard (PlayerPiece Black piece) fromSquare) = canPieceMoveToSquare (indexSquare $ oppositeSquare fromSquare) (indexSquare $ oppositeSquare toSquare) piece pos
+
+type FileIndex = Int
+type RankIndex = Int
+data IndexSquare = IndexSquare FileIndex RankIndex
+
+indexSquare :: Square -> IndexSquare
+indexSquare (Square f r) = IndexSquare (fileToIndex f) (rankToIndex r)
+
+-- TODO
+-- assumes white color
+canPieceMoveToSquare :: IndexSquare -> IndexSquare -> Piece -> SimplePosition -> Boolean
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Pawn pos = 
+  case fromFile, toFile of 
+       f, t | f == t -> (fromRank == 1 && toRank == 3) || (toRank - fromRank) == 1
+       f, t | abs (f - t) == 1 -> (toRank - fromRank) == 1
+       _, _ -> false
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Rook pos = true
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Knight pos = true
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Bishop pos = true
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) King pos = true
+canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) Queen pos = true

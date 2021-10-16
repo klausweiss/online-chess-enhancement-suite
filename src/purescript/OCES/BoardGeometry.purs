@@ -3,7 +3,7 @@ module OCES.BoardGeometry where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import OCES.Chess (File, Rank, Square(..), fileFromIndex, fileToIndex, rankFromIndex)
+import OCES.Chess (File, Rank, Square(..), fileFromIndex, fileToIndex, rankFromIndex, oppositeSquare)
 
 
 type Size2d = {width :: Int, height :: Int}
@@ -21,21 +21,6 @@ yToRank height y = yToIndex height y <#> rankFromIndex
 
 xToFile :: Int -> Int -> Maybe File
 xToFile width x = yToIndex width x >>= fileFromIndex
-
-
-oppositeSquare :: Square -> Square
-oppositeSquare (Square f r) = Square (oppositeFile f) (9 - r)
-
-oppositeFile :: File -> File
-oppositeFile 'a' = 'h'
-oppositeFile 'b' = 'g'
-oppositeFile 'c' = 'f'
-oppositeFile 'd' = 'e'
-oppositeFile 'e' = 'd'
-oppositeFile 'f' = 'c'
-oppositeFile 'g' = 'b'
-oppositeFile 'h' = 'a'
-oppositeFile _ = 'x'
 
 data Orientation = WhiteDown | BlackDown
 
