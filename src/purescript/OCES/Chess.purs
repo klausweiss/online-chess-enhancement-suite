@@ -119,6 +119,9 @@ makeSimplePosition pieces = let
 allPieces :: SimplePosition -> Array PieceOnBoard
 allPieces sp = sp.black <> sp.white
 
+flipChessboard :: SimplePosition -> SimplePosition
+flipChessboard pos = makeSimplePosition $ (\(PieceOnBoard pp sq) -> (PieceOnBoard pp (oppositeSquare sq))) <$> allPieces pos
+
 
 findPossibleMoveTargets :: Color -> Piece -> Square -> SimplePosition -> Array PieceOnBoard
 findPossibleMoveTargets c p dest pos = 
@@ -131,7 +134,7 @@ findPossibleMoveTargets c p dest pos =
 
 canMoveToSquare :: Square -> SimplePosition -> PieceOnBoard -> Boolean
 canMoveToSquare toSquare pos (PieceOnBoard (PlayerPiece White piece) fromSquare) = canPieceMoveToSquare (indexSquare $ fromSquare) (indexSquare $ toSquare) piece pos
-canMoveToSquare toSquare pos (PieceOnBoard (PlayerPiece Black piece) fromSquare) = canPieceMoveToSquare (indexSquare $ oppositeSquare fromSquare) (indexSquare $ oppositeSquare toSquare) piece pos
+canMoveToSquare toSquare pos (PieceOnBoard (PlayerPiece Black piece) fromSquare) = canPieceMoveToSquare (indexSquare $ oppositeSquare fromSquare) (indexSquare $ oppositeSquare toSquare) piece (flipChessboard pos)
 
 type FileIndex = Int
 type RankIndex = Int
