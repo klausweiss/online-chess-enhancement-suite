@@ -15,6 +15,7 @@
 		"128": "icon.png"
 	},
 	"permissions": [
+		"*://lichess.org/*",
 		"storage"
 	],
 	"options_ui": {

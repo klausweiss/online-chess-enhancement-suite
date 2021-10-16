@@ -1,5 +1,14 @@
 "use strict";
 
+var fetchFromPage;
+if (typeof(content) !== "undefined" && typeof(content.fetch) !== "undefined") {
+  fetchFromPage = content.fetch;
+} else {
+  fetchFromPage = fetch;
+}
+// TODO: Firefox support (original scripts aren't loaded in Chrome, but are in Firefox)
+
+
 function allowOCES(text) {
   let ostrichRe = /\!\w+\..strus.../i;
 	let ostrich = text.search(ostrichRe);
@@ -76,11 +85,10 @@ exports.enablePlugin = function () {
         rm(scriptNode);
         var promise;
         if (isExternal(scriptNode)) {
-          promise = fetch(scriptNode.src)
+          let src = scriptNode.src;
+          promise = fetchFromPage(scriptNode.src)
             .then((r) => r.text())
-            .then((t) => {
-              return allowOCES(t);
-            });
+            .then((t) => allowOCES(t));
         }
         else {
           promise = new Promise((ok, fail) => ok(mark(scriptNode)));
