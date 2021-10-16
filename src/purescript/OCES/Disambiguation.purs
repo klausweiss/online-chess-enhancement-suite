@@ -10,8 +10,8 @@ import Data.Generic.Rep (class Generic)
 import Data.Int (ceil, toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
-import OCES.BoardGeometry (fileToRank, Orientation(..))
-import OCES.Chess (PieceOnBoard(..), Square(..))
+import OCES.BoardGeometry (Orientation(..))
+import OCES.Chess (PieceOnBoard(..), Square(..), fileToIndex, rankToIndex)
 
 data DisambiguationDirection
   = Top
@@ -32,8 +32,8 @@ instance boundedEnumDisambiguationDirection :: Enum DisambiguationDirection wher
   pred = genericPred
 
 
-horizontally (PieceOnBoard _ (Square file _rank)) = fileToRank file
-vertically (PieceOnBoard _ (Square _file rank)) = rank
+horizontally (PieceOnBoard _ (Square file _rank)) = fileToIndex file
+vertically (PieceOnBoard _ (Square _file rank)) = rankToIndex rank
 
 direction Top = vertically 
 direction Right = horizontally 

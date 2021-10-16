@@ -12,6 +12,7 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable as Unfoldable
 import Effect (Effect)
+import Data.String
 import Effect.Console (logShow)
 import OCES.Chess (PieceOnBoard(..), Piece(..), Square)
 import OCES.Disambiguation (DisambiguationDirection(..), filterByDirection)

@@ -13,7 +13,6 @@ import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
-import Effect.Console (log)
 import OCES.BoardGeometry (Orientation(..), Size2d, getSquareCenterCoords, xToFile, yToRank, oppositeSquare)
 import OCES.Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findPossibleMoveTargets, makeSimplePosition)
 import OCES.Lichess.Plugin as Plugin
@@ -179,20 +178,7 @@ clickSquare orient board square = do
    let mouseEventAtPoint evtype = lift $ dispatchEvent (mouseEvent evtype) boardTarget
    _triggeredDown <- mouseEventAtPoint mousedown
    _triggeredUp <- mouseEventAtPoint mouseup
-   lift $ log $ "clicking " <> show square
    pure unit
-
-
-moveRandomPieceToSquare :: Piece -> Square -> MaybeT Effect Unit
-moveRandomPieceToSquare p dest = do
-   doc <- getDoc
-   orientation <- getOrientationFromDoc doc
-   position <- getCurrentPosition
-   let color = if orientation == BlackDown then Black else White
-   let possibleTargets = findPossibleMoveTargets color p dest position
-   lift $ log $ show possibleTargets
-   (PieceOnBoard _ source) <- MaybeT $ pure $ head possibleTargets
-   makeAMove source dest
 
 findPossibleMoves :: Piece -> Square -> MaybeT Effect (Array PieceOnBoard)
 findPossibleMoves p dest = do

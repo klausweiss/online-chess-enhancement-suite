@@ -2,24 +2,26 @@ module OCES.BoardGeometry where
 
 import Prelude
 
-import Data.Maybe (Maybe(..), fromMaybe)
-import OCES.Chess (File, Rank, Square(..), charToRank, rankToChar)
+import Data.Maybe (Maybe(..))
+import OCES.Chess (File, Rank, Square(..), fileFromIndex, fileToIndex, rankFromIndex)
 
 
 type Size2d = {width :: Int, height :: Int}
 type CoordinatePair = {x :: Int, y :: Int}
 
+yToIndex :: Int -> Int -> Maybe Int
+yToIndex height y = 
+   let 
+       squareSize = height / 8 
+       index = (y / squareSize) 
+    in if index >= 0 && index <= 7 then Just index else Nothing
+
 yToRank :: Int -> Int -> Maybe Rank
-yToRank height y = let 
-   squareSize = height / 8
-   rank = (y / squareSize) + 1
-  in if rank > 0 && rank < 9 then Just rank else Nothing
+yToRank height y = yToIndex height y <#> rankFromIndex
 
 xToFile :: Int -> Int -> Maybe File
-xToFile width y = yToRank width y >>= rankToChar
+xToFile width x = yToIndex width x >>= fileFromIndex
 
-fileToRank :: Char -> Int
-fileToRank = fromMaybe (-1) <<< charToRank
 
 oppositeSquare :: Square -> Square
 oppositeSquare (Square f r) = Square (oppositeFile f) (9 - r)
@@ -46,6 +48,6 @@ getSquareCenterCoords boardSize WhiteDown (Square file rank) =
    let 
        squareWidth = boardSize.width / 8
        halfSquareWidth = squareWidth / 2
-    in { x: ((fileToRank file) - 1) * squareWidth + halfSquareWidth
+    in { x: (fileToIndex file) * squareWidth + halfSquareWidth
        , y: (8 - rank) * squareWidth + halfSquareWidth
        } 
