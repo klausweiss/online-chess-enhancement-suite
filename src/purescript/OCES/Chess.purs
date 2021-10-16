@@ -164,6 +164,7 @@ canPieceMoveToSquare f@(IndexSquare fromFile fromRank) t@(IndexSquare toFile toR
   | abs (fromFile - toFile) == abs(fromRank - toRank) = nothingBetween f t pos
 canPieceMoveToSquare (IndexSquare fromFile fromRank) (IndexSquare toFile toRank) King _ 
   | abs (fromFile - toFile) <= 1 && abs (fromRank - toRank) <= 1 = true
+canPieceMoveToSquare (IndexSquare 4 0) (IndexSquare toFile 0) King _ | toFile == 2 || toFile == 6 = true
 canPieceMoveToSquare f t Queen pos = canPieceMoveToSquare f t Rook pos || canPieceMoveToSquare f t Bishop pos
 canPieceMoveToSquare _ _ _ _ = false
 
