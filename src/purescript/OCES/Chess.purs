@@ -152,7 +152,7 @@ canPieceMoveToSquare (IndexSquare fromFile fromRank) to@(IndexSquare toFile toRa
   let 
       occupied = isOccupied to pos 
    in case fromFile, toFile of 
-       f, t | f == t -> (fromRank == 1 && toRank == 3) || (toRank - fromRank) == 1 && not occupied
+       f, t | f == t -> ((fromRank == 1 && toRank == 3) || (toRank - fromRank) == 1) && not occupied
        f, t | abs (f - t) == 1 -> (toRank - fromRank) == 1 && occupied
        _, _ -> false
 canPieceMoveToSquare f@(IndexSquare fromFile fromRank) t@(IndexSquare toFile toRank) Rook pos 
