@@ -67,7 +67,10 @@ type State =
   , inputState :: InputState
   }
 
-newtype Config = Config Keymap
+type Config = 
+  { keymap :: Keymap
+  , shouldTolerateMissclicks :: Boolean
+  }
 
 keySignal :: Keycode -> Effect (Signal Keycode)
 keySignal key = do
@@ -94,14 +97,14 @@ data AppSignal
   = KeyPressSignal Keycode
   | MovePointer CoordinatePair
 
-processSignal :: Keymap -> AppSignal -> State -> Effect State
-processSignal keymap = 
+processSignal :: Config -> AppSignal -> State -> Effect State
+processSignal config = 
   let 
-    keyToPiece = reverseMap keymap.pieceKey
-    keyToDisambiguation = reverseMap keymap.disambiguationKey
+    keyToPiece = reverseMap config.keymap.pieceKey
+    keyToDisambiguation = reverseMap config.keymap.disambiguationKey
 
     processSignal' :: AppSignal -> State -> Effect State
-    processSignal' (KeyPressSignal key) state | key == keymap.cancelKey = do 
+    processSignal' (KeyPressSignal key) state | key == config.keymap.cancelKey = do 
        Lichess.dimHighlights
        pure state { inputState = NoInputYet }
     processSignal' (KeyPressSignal key) state@{ inputState: NoInputYet } = do 
@@ -109,7 +112,11 @@ processSignal keymap =
        possibleMoves <- join <<< Unfoldable.fromMaybe <$> (runMaybeT $ do
          piece <- MaybeT $ pure $ keyToPiece key
          square <- Lichess.coordsToSquare state.pointerPosition
-         Lichess.findPossibleMoves piece square
+         pieceMoves <- Lichess.findPossibleMoves piece square
+         if pieceMoves == [] && config.shouldTolerateMissclicks then
+          Lichess.findAllPossibleMoves square
+         else
+           pure pieceMoves
          ) :: Effect (Array PieceOnBoard)
        handlePossibleMoves state possibleMoves
     processSignal' (KeyPressSignal key) state@{ inputState: DisambiguationNeeded possibleMoves } = do
@@ -143,6 +150,9 @@ movePiece from to = do
 main :: Effect Unit
 main = do
   let keymap = defaultKeymap
+  let config = { keymap: keymap 
+               , shouldTolerateMissclicks: true 
+               }
   let initialState = { pointerPosition: {x: 0, y: 0}
                      , inputState: NoInputYet
                      }
@@ -150,6 +160,6 @@ main = do
   movePointerSignal' <- mousePos
   let sig = (MovePointer <$> movePointerSignal')
          <> (KeyPressSignal <$> keymapSignals')
-  _ <- foldEffect (processSignal keymap) initialState sig :: Effect (Signal State)
+  _ <- foldEffect (processSignal config) initialState sig :: Effect (Signal State)
   Lichess.enablePlugin
 

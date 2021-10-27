@@ -14,7 +14,7 @@ import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
 import OCES.BoardGeometry (Orientation(..), Size2d, getSquareCenterCoords, xToFile, yToRank)
-import OCES.Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findPossibleMoveTargets, makeSimplePosition, oppositeSquare)
+import OCES.Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findAllPossibleMoveTargets, findPossibleMoveTargets, makeSimplePosition, oppositeSquare)
 import OCES.Lichess.Plugin as Plugin
 import Signal.DOM (CoordinatePair)
 import Web.DOM.DOMTokenList (contains, DOMTokenList)
@@ -187,6 +187,15 @@ findPossibleMoves p dest = do
    position <- getCurrentPosition
    let color = if orientation == BlackDown then Black else White
    let possibleTargets = findPossibleMoveTargets color p dest position
+   pure possibleTargets
+
+findAllPossibleMoves :: Square -> MaybeT Effect (Array PieceOnBoard)
+findAllPossibleMoves dest = do
+   doc <- getDoc
+   orientation <- getOrientationFromDoc doc
+   position <- getCurrentPosition
+   let color = if orientation == BlackDown then Black else White
+   let possibleTargets = findAllPossibleMoveTargets color dest position
    pure possibleTargets
 
 dimHighlights :: Effect Unit

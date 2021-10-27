@@ -132,6 +132,14 @@ findPossibleMoveTargets c p dest pos =
    in
     possiblePieces
 
+findAllPossibleMoveTargets :: Color -> Square -> SimplePosition -> Array PieceOnBoard
+findAllPossibleMoveTargets c dest pos = 
+  let
+      possiblePieces = filter (canMoveToSquare dest pos)
+        $ if c == White then pos.white else pos.black
+   in
+    possiblePieces
+
 canMoveToSquare :: Square -> SimplePosition -> PieceOnBoard -> Boolean
 canMoveToSquare toSquare pos (PieceOnBoard (PlayerPiece White piece) fromSquare) = canPieceMoveToSquare (indexSquare $ fromSquare) (indexSquare $ toSquare) piece pos
 canMoveToSquare toSquare pos (PieceOnBoard (PlayerPiece Black piece) fromSquare) = canPieceMoveToSquare (indexSquare $ oppositeSquare fromSquare) (indexSquare $ oppositeSquare toSquare) piece (flipChessboard pos)
