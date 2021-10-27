@@ -52,3 +52,7 @@ escKey = 27
 supportsKeyUp :: Keycode -> Boolean
 supportsKeyUp k | k == shiftKey = false
 supportsKeyUp _ = true
+
+supportsKeyDown :: Keycode -> Boolean
+supportsKeyDown k | k == escKey = false
+supportsKeyDown _ = true
