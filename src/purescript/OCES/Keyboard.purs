@@ -1,6 +1,6 @@
 module OCES.Keyboard where
 
-import Prelude (negate)
+import Prelude (negate, (==))
 
 type Keycode = Int
 
@@ -33,7 +33,7 @@ keycodeFor = keycodeFor'
    keycodeFor' 'w' = 87
    keycodeFor' 'x' = 88
    keycodeFor' 'y' = 89
-   keycodeFor' 'z' = 88
+   keycodeFor' 'z' = 90
    keycodeFor' ' ' = 32
    keycodeFor' _   = -1
 
@@ -45,3 +45,10 @@ ctrlKey = 17
 
 altKey :: Keycode
 altKey = 18
+
+escKey :: Keycode
+escKey = 27
+
+supportsKeyUp :: Keycode -> Boolean
+supportsKeyUp k | k == shiftKey = false
+supportsKeyUp _ = true

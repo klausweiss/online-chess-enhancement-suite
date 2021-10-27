@@ -70,9 +70,11 @@ newtype Config = Config Keymap
 keySignal :: Keycode -> Effect (Signal Keycode)
 keySignal key = do
   signal <- keyPressed true key 
-  -- TODO: keyUp for keys which support it
   let isKeyDown = eq true
-  pure $ const key <$> filter isKeyDown true signal -- only keydowns, true is essential for SHIFT to work
+  let isKeyUp = not <<< isKeyDown
+  let thisKeyFilter = if supportsKeyUp key then isKeyUp else isKeyDown
+  let default = if supportsKeyUp key then false else true  -- that is the way it has to be
+  pure $ const key <$> filter thisKeyFilter default signal
 
 keymapSignals :: Keymap -> Effect (Signal Keycode)
 keymapSignals keymap = 
