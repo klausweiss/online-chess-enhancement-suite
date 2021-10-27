@@ -14,7 +14,7 @@ import Data.Unfoldable as Unfoldable
 import Effect (Effect)
 import OCES.Chess (PieceOnBoard(..), Piece(..), Square)
 import OCES.Disambiguation (DisambiguationDirection(..), filterByDirection)
-import OCES.Keyboard (Keycode, keycodeFor, shiftKey, altKey)
+import OCES.Keyboard (Keycode, escKey, keycodeFor, supportsKeyUp)
 import OCES.Lichess as Lichess
 import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
@@ -25,6 +25,7 @@ import Signal.Effect (foldEffect)
 type Keymap =
   { pieceKey :: Piece -> Keycode
   , disambiguationKey :: DisambiguationDirection -> Keycode
+  , cancelKey :: Keycode
   }
 
 
@@ -43,6 +44,7 @@ defaultKeymap =
    in
   { pieceKey: pieceKey
   , disambiguationKey : disambiguationKey
+  , cancelKey : escKey
   }
 
 reverseMap :: forall e k. Enum e => Bounded e => Ord k => (e -> k) -> k -> Maybe e
@@ -81,7 +83,7 @@ keymapSignals keymap =
   let
       pieceKeys = keymap.pieceKey <$> upFromIncluding bottom
       disambiguationKeys = keymap.disambiguationKey <$> upFromIncluding bottom
-      allKeys = nub $ pieceKeys <> disambiguationKeys
+      allKeys = nub $ pieceKeys <> disambiguationKeys <> [keymap.cancelKey]
       allSignals = traverse keySignal allKeys
   in do
      mergedSignals <- mergeMany <$> allSignals
@@ -99,6 +101,9 @@ processSignal keymap =
     keyToDisambiguation = reverseMap keymap.disambiguationKey
 
     processSignal' :: AppSignal -> State -> Effect State
+    processSignal' (KeyPressSignal key) state | key == keymap.cancelKey = do 
+       Lichess.dimHighlights
+       pure state { inputState = NoInputYet }
     processSignal' (KeyPressSignal key) state@{ inputState: NoInputYet } = do 
        Lichess.dimHighlights
        possibleMoves <- join <<< Unfoldable.fromMaybe <$> (runMaybeT $ do
@@ -107,7 +112,6 @@ processSignal keymap =
          Lichess.findPossibleMoves piece square
          ) :: Effect (Array PieceOnBoard)
        handlePossibleMoves state possibleMoves
-    -- TODO: reset disambiguation using ESC (customizable)
     processSignal' (KeyPressSignal key) state@{ inputState: DisambiguationNeeded possibleMoves } = do
        Lichess.dimHighlights
        newPossibleMoves <- fromMaybe possibleMoves <$> (runMaybeT $ do
