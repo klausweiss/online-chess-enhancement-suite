@@ -1,4 +1,4 @@
-module Main where
+module KeyboardControl where
 
 import Prelude
 

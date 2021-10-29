@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import './options-storage.js';
 
-var Main = require('../../output/Main');
+var KeyboardControl = require('../../output/KeyboardControl');
 
 function main () {
     /*
@@ -15,12 +15,12 @@ function main () {
     A .env file can also be used to override shell variables
     for more information, see https://en.parceljs.org/env.html
 
-    These variables can be supplied to the Main.main function.
+    These variables can be supplied to the KeyboardControl.main function.
     However, you will need to change the type to accept variables, by default it is an Effect.
     You will probably want to make it a function from String -> Effect ()
   */
 
-  Main.main();
+  KeyboardControl.main();
 }
 
 main();
