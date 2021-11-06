@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-unassigned-import
-import './options-storage.js';
-
 var KeyboardControl = require('../../output/KeyboardControl');
 
 function main () {

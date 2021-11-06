@@ -12,40 +12,19 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable as Unfoldable
 import Effect (Effect)
-import OCES.Chess (PieceOnBoard(..), Piece(..), Square)
-import OCES.Disambiguation (DisambiguationDirection(..), filterByDirection)
-import OCES.Keyboard (Keycode, escKey, keycodeFor, supportsKeyDown, supportsKeyUp)
+import Effect.Aff (Aff, launchAff_)
+import Effect.Class (liftEffect)
+import Effect.Console (log)
+import OCES.Chess (PieceOnBoard(..), Square)
+import OCES.Disambiguation (filterByDirection)
+import OCES.Keyboard (Keycode, supportsKeyDown, supportsKeyUp)
 import OCES.Lichess as Lichess
+import OCSE.KeyboardControl.Keymap (Keymap, defaultKeymap)
 import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
 import Signal.DOM.Prevented (keyPressed)
 import Signal.Effect (foldEffect)
-
-
-type Keymap =
-  { pieceKey :: Piece -> Keycode
-  , disambiguationKey :: DisambiguationDirection -> Keycode
-  , cancelKey :: Keycode
-  }
-
-
-defaultKeymap :: Keymap
-defaultKeymap =
-  let pieceKey Pawn = keycodeFor 'w' 
-      pieceKey Rook = keycodeFor 'a' 
-      pieceKey Knight = keycodeFor 's' 
-      pieceKey Bishop = keycodeFor 'd' 
-      pieceKey King = keycodeFor 'e'
-      pieceKey Queen = keycodeFor 'q'
-      disambiguationKey Top = keycodeFor 'w'
-      disambiguationKey Bottom = keycodeFor 's'
-      disambiguationKey Left = keycodeFor 'a'
-      disambiguationKey Right = keycodeFor 'd'
-   in
-  { pieceKey: pieceKey
-  , disambiguationKey : disambiguationKey
-  , cancelKey : escKey
-  }
+import WebExtension.Storage as Storage
 
 reverseMap :: forall e k. Enum e => Bounded e => Ord k => (e -> k) -> k -> Maybe e
 reverseMap enumToKey = 
@@ -156,16 +135,23 @@ movePiece from to = do
   pure unit
 
 main :: Effect Unit
-main = do
+main = launchAff_ mainAff
+
+mainAff :: Aff Unit
+mainAff = do
   let keymap = defaultKeymap
   let config = { keymap: keymap 
                , shouldTolerateMissclicks: true 
                , preferredKeyEventType: KeyDown
                }
+  liftEffect $ runKeyboardControl config
+
+runKeyboardControl :: Config -> Effect Unit
+runKeyboardControl config = do
   let initialState = { pointerPosition: {x: 0, y: 0}
                      , inputState: NoInputYet
                      }
-  keymapSignals' <- keymapSignals config.preferredKeyEventType keymap
+  keymapSignals' <- keymapSignals config.preferredKeyEventType config.keymap
   movePointerSignal' <- mousePos
   let sig = (MovePointer <$> movePointerSignal')
          <> (KeyPressSignal <$> keymapSignals')
