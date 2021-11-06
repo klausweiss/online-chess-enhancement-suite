@@ -3,12 +3,12 @@
 var syncArea, localArea;
 var storageAreaActionPromise;
 
-if (typeof(browser) !== "undefined") {
+if (typeof (browser) !== "undefined") {
 	// firefox
 	syncArea = browser.storage.sync;
 	localArea = browser.storage.local;
 
-	storageAreaActionPromise = function (area, action, param) {
+	storageAreaActionPromise = function(area, action, param) {
 		// common interface with chrome
 		return area[action](param);
 	}
@@ -17,11 +17,11 @@ if (typeof(browser) !== "undefined") {
 	syncArea = chrome.storage.sync;
 	localArea = chrome.storage.local;
 
-	storageAreaActionPromise = function (area, action, param) {
+	storageAreaActionPromise = function(area, action, param) {
 		// Polyfill for area.get("key") not returning promise in Chrome.
 		// It works with manifest V3, but we can't have this at this point.
-		return new Promise((resolve, reject) => {
-			area[action](param, function(...args) { 
+		return new Promise((resolve, _reject) => {
+			area[action](param, function(...args) {
 				console.log("resolving ", action);
 				resolve(...args);
 			});
@@ -42,7 +42,7 @@ function injectStorageArea(f) {
 };
 
 exports.getImpl = injectStorageArea(
-	storageArea => key => 
+	storageArea => key =>
 		storageAreaActionPromise(storageArea, "get", key).then((v) => v[key]));
 
 exports.setImpl = injectStorageArea(

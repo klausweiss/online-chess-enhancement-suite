@@ -1,7 +1,7 @@
 "use strict";
 
 var fetchFromPage;
-if (typeof(content) !== "undefined" && typeof(content.fetch) !== "undefined") {
+if (typeof (content) !== "undefined" && typeof (content.fetch) !== "undefined") {
   fetchFromPage = content.fetch;
 } else {
   fetchFromPage = fetch;
@@ -11,10 +11,7 @@ if (typeof(content) !== "undefined" && typeof(content.fetch) !== "undefined") {
 
 function allowOCES(text) {
   let ostrichRe = /\!\w+\..strus.../i;
-	let ostrich = text.search(ostrichRe);
-	let shouldAllow = ostrich > -1;
-  let modifiedText = text.replace(ostrichRe, (match, offset, string, groups) => {
-    let target = match.match(/\!(\w+)\./)[1];
+  let modifiedText = text.replace(ostrichRe, (_match, _offset, _string, _groups) => {
     return `(false)`;
   });
   return script(modifiedText);
@@ -42,8 +39,8 @@ function css(text) {
 }
 
 function hasScripts(mutation) {
-  return mutation.addedNodes[0] && 
-    mutation.addedNodes[0].tagName && 
+  return mutation.addedNodes[0] &&
+    mutation.addedNodes[0].tagName &&
     mutation.addedNodes[0].tagName.toLowerCase() === "script";
 }
 
@@ -65,17 +62,17 @@ function windowOnLoad() {
   load(script("window.onload();"));
 }
 
-exports.enablePlugin = function () {
+exports.enablePlugin = function() {
   var nonces = 0;
   let promises = [];
   let afterScriptsProcessed = function() {
     Promise.all(promises)
-    .then((result) => {
-      result.forEach((scriptNode) => {
-        load(scriptNode);
+      .then((result) => {
+        result.forEach((scriptNode) => {
+          load(scriptNode);
+        });
+        windowOnLoad();
       });
-      windowOnLoad();
-    });
   };
   let observer = new MutationObserver((mutations, observer) => {
     mutations.forEach((mutation) => {
@@ -85,13 +82,12 @@ exports.enablePlugin = function () {
         rm(scriptNode);
         var promise;
         if (isExternal(scriptNode)) {
-          let src = scriptNode.src;
           promise = fetchFromPage(scriptNode.src)
             .then((r) => r.text())
             .then((t) => allowOCES(t));
         }
         else {
-          promise = new Promise((ok, fail) => ok(mark(scriptNode)));
+          promise = new Promise((ok, _fail) => ok(mark(scriptNode)));
         }
         promises.push(promise);
         if (scriptNode.getAttribute("nonce") != null) {
