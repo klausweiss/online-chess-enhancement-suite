@@ -13,6 +13,7 @@ import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Traversable (sequence, traverse)
 import Data.Tuple (Tuple(..), fst, snd)
 import Effect (Effect)
+import Effect.Class (class MonadEffect, liftEffect)
 import OCES.BoardGeometry (Orientation(..), Size2d, getSquareCenterCoords, xToFile, yToRank)
 import OCES.Chess (Color(..), Piece(..), PieceOnBoard(..), PlayerPiece(..), SimplePosition, Square(..), findAllPossibleMoveTargets, findPossibleMoveTargets, makeSimplePosition, oppositeSquare)
 import OCES.Lichess.Plugin as Plugin
@@ -242,6 +243,6 @@ isElementSquare boardSize orient square el = do
    pure $ fromMaybe false elementMatches
 
 
-enablePlugin :: Effect Unit
-enablePlugin = Plugin.enablePlugin
+enablePlugin :: forall eff. MonadEffect eff => eff Unit
+enablePlugin = liftEffect Plugin.enablePlugin
 

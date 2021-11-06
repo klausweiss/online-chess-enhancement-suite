@@ -16,16 +16,28 @@
 	},
 	"permissions": [
 		"*://lichess.org/*",
+		"*://lichess1.org/*",
+		"webRequestBlocking",
+		"webRequest",
 		"storage"
 	],
 	"options_ui": {
 		"chrome_style": true,
-		"page": "options.html"
+		"page": "preferences.html"
+	},
+	"background": {
+		"scripts": [
+			"background-lichess.js"
+		]
 	},
 	"content_scripts": [
 		{
-			"matches": ["*://lichess.org/*"],
-			"js": ["keyboard-control.js"],
+			"matches": [
+				"*://lichess.org/*"
+			],
+			"js": [
+				"keyboard-control.js"
+			],
 			"run_at": "document_start"
 		}
 	]

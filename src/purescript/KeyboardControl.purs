@@ -13,7 +13,7 @@ import Data.Tuple (Tuple(..))
 import Data.Unfoldable as Unfoldable
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
-import Effect.Class (liftEffect)
+import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Console (log)
 import OCES.Chess (PieceOnBoard(..), Square)
 import OCES.Disambiguation (filterByDirection)
@@ -144,10 +144,11 @@ mainAff = do
                , shouldTolerateMissclicks: true 
                , preferredKeyEventType: KeyDown
                }
-  liftEffect $ runKeyboardControl config
+  Lichess.enablePlugin
+  listenToEvents config
 
-runKeyboardControl :: Config -> Effect Unit
-runKeyboardControl config = do
+listenToEvents :: forall eff. MonadEffect eff => Config -> eff Unit
+listenToEvents config = liftEffect $ do
   let initialState = { pointerPosition: {x: 0, y: 0}
                      , inputState: NoInputYet
                      }
@@ -156,5 +157,4 @@ runKeyboardControl config = do
   let sig = (MovePointer <$> movePointerSignal')
          <> (KeyPressSignal <$> keymapSignals')
   _ <- foldEffect (processSignal config) initialState sig :: Effect (Signal State)
-  Lichess.enablePlugin
-
+  pure unit

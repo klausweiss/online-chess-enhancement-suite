@@ -5,17 +5,13 @@ var storageAreaActionPromise;
 
 if (typeof (browser) !== "undefined") {
 	// firefox
-	syncArea = browser.storage.sync;
-	localArea = browser.storage.local;
-
 	storageAreaActionPromise = function(area, action, param) {
 		// common interface with chrome
 		return area[action](param);
 	}
 } else {
 	// chrome
-	syncArea = chrome.storage.sync;
-	localArea = chrome.storage.local;
+	browser = chrome;
 
 	storageAreaActionPromise = function(area, action, param) {
 		// Polyfill for area.get("key") not returning promise in Chrome.
@@ -28,6 +24,9 @@ if (typeof (browser) !== "undefined") {
 		});
 	}
 }
+
+syncArea = browser.storage.sync;
+localArea = browser.storage.local;
 
 function injectStorageArea(f) {
 	return sync => local => area => {
