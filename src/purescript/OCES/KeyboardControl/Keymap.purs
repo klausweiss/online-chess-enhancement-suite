@@ -12,6 +12,7 @@ import Data.Tuple (Tuple(..), snd)
 import OCES.Chess (Piece(..))
 import OCES.Disambiguation (DisambiguationDirection(..))
 import OCES.Keyboard (Keycode, escKey, keycodeFor)
+import Partial.Unsafe (unsafePartial)
 import Simple.JSON (readJSON, writeJSON)
 
 type Keymap =
@@ -83,16 +84,19 @@ decodeEnumFunction ef =
     g = joinMaybeFun f :: Maybe (e -> x)
   in Either.note "couldn't decode function" g
 
-jsonDecodeKeymap :: String -> Either.Either String IntermediateKeymapRep
-jsonDecodeKeymap keymapStr = case readJSON keymapStr of
+jsonDecodeIntermediateKeymap :: String -> Either.Either String IntermediateKeymapRep
+jsonDecodeIntermediateKeymap keymapStr = case readJSON keymapStr of
   Either.Right a -> Either.Right $ a
   Either.Left e -> Either.Left $ show e
 
-decodeKeymap :: Partial => IntermediateKeymapRep -> Either.Either String Keymap
-decodeKeymap ikm = do
+decodeKeymap :: IntermediateKeymapRep -> Either.Either String Keymap
+decodeKeymap ikm = unsafePartial do
      disambiguationKey <- decodeEnumFunction ikm.disambiguation
      pieceKey <- decodeEnumFunction ikm.pieces
      Either.Right { cancelKey: ikm.cancel 
                   , disambiguationKey: disambiguationKey 
                   , pieceKey: pieceKey 
                   }
+
+jsonDecodeKeymap :: String -> Either.Either String Keymap
+jsonDecodeKeymap json = jsonDecodeIntermediateKeymap json >>= decodeKeymap

@@ -24,6 +24,7 @@ to generate this file without the comments in this block.
   , "integers"
   , "maybe"
   , "ordered-collections"
+  , "partial"
   , "prelude"
   , "psci-support"
   , "signal"
