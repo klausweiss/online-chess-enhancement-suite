@@ -1,4 +1,4 @@
-module OCES.Preferences.Components.PieceKeyInputField where
+module OCES.Preferences.Components.KeycodeInputField where
 
 import Prelude
 
@@ -12,17 +12,19 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import OCES.Chess (Piece)
 import OCES.Keyboard (Keycode)
 import OCES.Keyboard as Keyboard
 
-type Input = 
-  { piece :: Piece 
+class HtmlLabel v where
+  htmlLabel :: forall w i. v -> HH.HTML w i
+
+type Input v = 
+  { value :: v
   , keycode :: Keycode 
   }
 
-type State = 
-  { piece :: Piece
+type State v = 
+  { value :: v
   , committedKeycode :: Keycode
   , newKeycode :: Maybe Keycode
   }
@@ -34,7 +36,7 @@ data Query a
 data Action
   = SetNewKeycode (Maybe Keycode)
 
-inputField :: forall output m. H.Component Query Input output m
+inputField :: forall v output m. HtmlLabel v => H.Component Query (Input v) output m
 inputField =
   H.mkComponent 
     { initialState
@@ -45,15 +47,15 @@ inputField =
       }
     }
 
-initialState :: Input -> State
-initialState { piece, keycode } = 
-  { piece
+initialState :: forall v. Input v -> State v
+initialState { value, keycode } = 
+  { value
   , committedKeycode: keycode
   , newKeycode: Nothing
   }
 
-render :: forall m. State -> H.ComponentHTML Action () m 
-render { piece, committedKeycode, newKeycode } =
+render :: forall m v. HtmlLabel v => State v -> H.ComponentHTML Action () m 
+render { value, committedKeycode, newKeycode } =
   let options 
         = (\keycode -> HH.option 
             [ HP.value (show keycode) 
@@ -64,18 +66,17 @@ render { piece, committedKeycode, newKeycode } =
       select = HH.select 
                 [ HE.onValueChange (parseKeycode >>> SetNewKeycode) ]
                 options
-      label = HH.text (show piece <> " ")
       maybeOldValue = Unfoldable.fromMaybe 
         $ const committedKeycode <$> newKeycode
         <#> \kc -> HH.span 
           [ HP.classes [ ClassName "old-value" ] ] 
           [ HH.text $ " was " <> Keyboard.toHumanReadable kc <> " before"]
-   in HH.div [] $ [ label, select ] <> maybeOldValue
+   in HH.div [] $ [ htmlLabel value, select ] <> maybeOldValue
 
 parseKeycode :: String -> Maybe Keycode
 parseKeycode = Int.fromString
 
-handleQuery :: forall output a m. Query a -> H.HalogenM State Action () output m (Maybe a)
+handleQuery :: forall v output a m. Query a -> H.HalogenM (State v) Action () output m (Maybe a)
 handleQuery = 
   let getKeycode = do
         { committedKeycode, newKeycode } <- get
@@ -89,7 +90,7 @@ handleQuery =
     modify_ (\s -> s { committedKeycode = keycode, newKeycode = Nothing })
     pure $ Just a
 
-handleAction :: forall m output. Action -> H.HalogenM State Action () output m Unit
+handleAction :: forall v m output. Action -> H.HalogenM (State v) Action () output m Unit
 handleAction = 
   case _ of
   SetNewKeycode Nothing -> do
