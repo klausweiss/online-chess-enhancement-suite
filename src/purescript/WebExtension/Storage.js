@@ -11,7 +11,7 @@ if (typeof (browser) !== "undefined") {
 	}
 } else {
 	// chrome
-	browser = chrome;
+	var browser = chrome;
 
 	storageAreaActionPromise = function(area, action, param) {
 		// Polyfill for area.get("key") not returning promise in Chrome.

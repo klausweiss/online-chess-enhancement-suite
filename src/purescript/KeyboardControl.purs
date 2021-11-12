@@ -5,7 +5,6 @@ import Prelude
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
 import Data.Array (nub)
-import Data.Either (hush, note)
 import Data.Enum (class Enum, upFromIncluding)
 import Data.Map (Map, fromFoldable, lookup)
 import Data.Maybe (Maybe, fromMaybe)
@@ -13,18 +12,17 @@ import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable as Unfoldable
 import Effect (Effect)
-import Effect.Aff (Aff, attempt, launchAff_)
+import Effect.Aff (Aff, launchAff_)
 import Effect.Class (class MonadEffect, liftEffect)
 import OCES.Chess (PieceOnBoard(..), Square)
 import OCES.Disambiguation (filterByDirection)
 import OCES.Keyboard (Keycode, supportsKeyDown, supportsKeyUp)
 import OCES.Lichess as Lichess
-import OCSE.KeyboardControl.Keymap (Keymap, decodeKeymap, defaultKeymap, jsonDecodeKeymap)
+import OCSE.KeyboardControl.Keymap (Keymap, loadKeymap)
 import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
 import Signal.DOM.Prevented (keyPressed)
 import Signal.Effect (foldEffect)
-import WebExtension.Storage as Storage
 
 reverseMap :: forall e k. Enum e => Bounded e => Ord k => (e -> k) -> k -> Maybe e
 reverseMap enumToKey = 
@@ -158,13 +156,3 @@ listenToEvents config = liftEffect $ do
          <> (KeyPressSignal <$> keymapSignals')
   _ <- foldEffect (processSignal config) initialState sig :: Effect (Signal State)
   pure unit
-
-keymapPrefKey :: String
-keymapPrefKey = "keymap"
-
-loadKeymap :: Aff Keymap
-loadKeymap = do
-  eitherKeymap <- attempt (Storage.get Storage.Local keymapPrefKey) <#> 
-    note "couldn't read from storage" <<< hush <#>
-    \kmap -> kmap >>= jsonDecodeKeymap
-  pure $ fromMaybe defaultKeymap (hush eitherKeymap)
