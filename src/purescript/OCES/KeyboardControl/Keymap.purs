@@ -54,6 +54,11 @@ loadKeymap = do
     \kmap -> kmap >>= jsonDecodeKeymap
   pure $ fromMaybe defaultKeymap (hush eitherKeymap)
 
+saveKeymap :: Keymap -> Aff Unit
+saveKeymap keymap = do
+  _ <- attempt (Storage.set Storage.Local keymapPrefKey (jsonEncodeKeymap keymap)) 
+  pure unit
+
 
 type EncodedFunction k v = Array { key :: k, value :: v }
 
