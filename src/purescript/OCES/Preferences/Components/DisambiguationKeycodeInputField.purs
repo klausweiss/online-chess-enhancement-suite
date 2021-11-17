@@ -7,14 +7,21 @@ import Data.Enum (class Enum)
 import Data.Enum.Generic (genericPred, genericSucc)
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
+import Halogen (ClassName(..))
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
 import OCES.Disambiguation (DisambiguationDirection)
 import OCES.Preferences.Components.KeycodeInputField as KeycodeInputField
 
 
 newtype LabeledDisambiguationDirection = LabeledDisambiguationDirection DisambiguationDirection
 instance KeycodeInputField.HtmlLabel LabeledDisambiguationDirection where
-  htmlLabel (LabeledDisambiguationDirection p) = HH.text $ show p
+  htmlLabel (LabeledDisambiguationDirection d) = 
+    HH.div 
+      [ HP.classes [ ClassName "icon", ClassName "direction", ClassName (show d) ]
+      , HP.title $ show d
+      ] []
+
 derive instance genericLabeledDisambiguationDirection :: Generic LabeledDisambiguationDirection _
 derive instance eqLabeledDisambiguationDirection :: Eq LabeledDisambiguationDirection
 derive instance ordLabeledDisambiguationDirection :: Ord LabeledDisambiguationDirection

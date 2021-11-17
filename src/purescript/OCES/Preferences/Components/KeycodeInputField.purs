@@ -27,11 +27,13 @@ type State v =
   { value :: v
   , committedKeycode :: Keycode
   , newKeycode :: Maybe Keycode
+  , error :: Maybe String
   }
 
 data Query a
   = GetNewKeyCode (Keycode -> a)
   | Commit a
+  | ShowError String a
 
 data Action
   = SetNewKeycode (Maybe Keycode)
@@ -43,7 +45,7 @@ inputField =
     , render
     , eval: H.mkEval H.defaultEval 
       { handleQuery = handleQuery
-      , handleAction = handleAction
+      , handleAction = handleAction  -- TODO: initial action
       }
     }
 
@@ -52,10 +54,11 @@ initialState { value, keycode } =
   { value
   , committedKeycode: keycode
   , newKeycode: Nothing
+  , error: Nothing
   }
 
 render :: forall m v. HtmlLabel v => State v -> H.ComponentHTML Action () m 
-render { value, committedKeycode, newKeycode } =
+render { value, committedKeycode, newKeycode, error } =
   let options 
         = (\keycode -> HH.option 
             [ HP.value (show keycode) 
@@ -64,14 +67,23 @@ render { value, committedKeycode, newKeycode } =
             [ HH.text (Keyboard.toHumanReadable keycode) ])
         <$> Keyboard.supportedKeycodes
       select = HH.select 
-                [ HE.onValueChange (parseKeycode >>> SetNewKeycode) ]
+                [ HE.onValueChange (parseKeycode >>> SetNewKeycode) 
+                , HP.classes $ maybeErrorCssClass
+                ]
                 options
-      maybeOldValue = Unfoldable.fromMaybe 
-        $ const committedKeycode <$> newKeycode
+      maybeOldValue = Unfoldable.fromMaybe $
+        newKeycode 
+        >>= (\kc -> if kc == committedKeycode then Nothing else Just kc)
+        <#> const committedKeycode
         <#> \kc -> HH.span 
           [ HP.classes [ ClassName "old-value" ] ] 
-          [ HH.text $ " was " <> Keyboard.toHumanReadable kc <> " before"]
-   in HH.div [] $ [ htmlLabel value, select ] <> maybeOldValue
+          [ HH.text $ " (" <> Keyboard.toHumanReadable kc <> ")"]
+      maybeErrorCssClass = (Unfoldable.fromMaybe error)
+        <#> \_ -> ClassName "error"
+   in HH.div 
+     [
+     ]
+     ([ htmlLabel value, select ] <> maybeOldValue)
 
 parseKeycode :: String -> Maybe Keycode
 parseKeycode = Int.fromString
@@ -87,8 +99,11 @@ handleQuery =
     pure <<< Just <<< reply $ keycode
   Commit a -> do
     keycode <- getKeycode
-    modify_ (\s -> s { committedKeycode = keycode, newKeycode = Nothing })
+    modify_ (\s -> s { committedKeycode = keycode, newKeycode = Nothing, error = Nothing })
     pure $ Just a
+  ShowError error a -> do
+     modify_ (\s -> s { error = Just error })
+     pure $ Just a
 
 handleAction :: forall v m output. Action -> H.HalogenM (State v) Action () output m Unit
 handleAction = 
@@ -97,4 +112,4 @@ handleAction =
     pure unit
   SetNewKeycode (Just keycode) -> do
     state <- get
-    put $ state { newKeycode = Just keycode } 
+    put $ state { newKeycode = Just keycode, error = Nothing } 

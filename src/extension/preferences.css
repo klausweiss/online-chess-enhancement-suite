@@ -1,0 +1,72 @@
+.grid {
+	display: flex;
+	flex-direction: column;
+}
+
+.row {
+	display: flex;
+	flex-direction: row;
+}
+
+.column {
+	flex-grow: 1;
+}
+
+select, button {
+	height: 3em;
+}
+
+div.icon.piece
+, div.icon.direction
+, div.icon.cancel
+{
+	display: inline-block;
+	width: 3em;
+	height: 3em;
+	background-size: contain;
+	vertical-align: middle;
+	margin-right: .5em;
+}
+div.icon.Bishop {
+	background-image: url("../vendor/cburnett/black-bishop.svg");
+}
+div.icon.King {
+	background-image: url("../vendor/cburnett/black-king.svg");
+}
+div.icon.Knight {
+	background-image: url("../vendor/cburnett/black-knight.svg");
+}
+div.icon.Pawn {
+	background-image: url("../vendor/cburnett/black-pawn.svg");
+}
+div.icon.Queen {
+	background-image: url("../vendor/cburnett/black-queen.svg");
+}
+div.icon.Rook {
+	background-image: url("../vendor/cburnett/black-rook.svg");
+}
+
+div.icon.direction {
+	background-image: url("../vendor/reshot.com/arrow-up.svg");
+	box-sizing: border-box;
+}
+div.icon.Right { transform: rotate(90deg); }
+div.icon.Bottom { transform: rotate(180deg); }
+div.icon.Left { transform: rotate(270deg); }
+
+div.icon.cancel {
+	background-image: url("../vendor/reshot.com/cancel.svg");
+}
+
+span.old-value {
+	color: rgba(0, 0, 0, 70%);
+}
+select.error {
+	background-color: #ffb5b5;
+	background-image: none;
+}
+
+button.submit {
+	margin: 0.5em 0.2em;
+	min-width: 10em;
+}
