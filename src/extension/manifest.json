@@ -1,6 +1,6 @@
 {
 	"name": "Online Chess Enhancement Suite",
-	"version": "0.0.0",
+	"version": "0.1",
 	"description": "Allows to use keyboard and mouse to move pieces on lichess.org. To move a piece, point the mouse cursor to the square that you would like to move to and press a key corresponding to a type of piece which sould be moved there.",
 	"homepage_url": "https://github.com/klausweiss/online-chess-enhancement-suite",
 	"manifest_version": 2,
