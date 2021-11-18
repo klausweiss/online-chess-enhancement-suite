@@ -57,7 +57,15 @@ function isMarked(node) {
 
 function windowOnLoad() {
   load(css(".oces-highlighted { background-color: #89dae7; }"));
-  load(script("window.onload();"));
+  load(script(`
+    // before 11/2021
+    if (window.onload != null) window.onload();
+    // after 11/2021
+    window.document.dispatchEvent(new Event("DOMContentLoaded", {
+      bubbles: true,
+      cancelable: true
+    }));
+  `));
 }
 
 exports.enablePlugin = function() {
