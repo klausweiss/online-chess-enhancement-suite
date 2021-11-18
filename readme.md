@@ -8,6 +8,28 @@ To move a piece, point the mouse cursor to the square that you would like to mov
 Shoutout to [Lichess-Keyboard-Input](https://github.com/Sentero-esp12/Lichess-Keyboard-Input) for the original idea.
 It differs from the original extension in that all pieces of the same kind are controlled using the same key.
 
+## Controls
+
+The default controls are provided in the tables below, though they can be customized on the extension preferences page.
+
+Piece | Key
+------|----
+![Pawn](./src/vendor/cburnett/black-pawn.svg) (Pawn) | `W`
+![Rook](./src/vendor/cburnett/black-rook.svg) (Rook) | `A`
+![Knight](./src/vendor/cburnett/black-knight.svg) (Knight) | `S`
+![Bishop](./src/vendor/cburnett/black-bishop.svg) (Bishop) | `D`
+![King](./src/vendor/cburnett/black-king.svg) (King) | `E`
+![Queen](./src/vendor/cburnett/black-queen.svg) (Queen) | `Q`
+
+Disambiguation | Key
+------|----
+Select the top piece | `W`
+Select the piece on the right | `D`
+Select the bottom piece | `S`
+Select the piece on the left | `A`
+Cancel highlight | `Esc`
+
+
 ## Disambiguation
 
 If it's ambiguous which piece should move to a square that the cursor points at, the pieces which can move there are highlighted
