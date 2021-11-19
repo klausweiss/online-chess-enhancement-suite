@@ -1,5 +1,7 @@
 # online-chess-enhancement-suite
 
+[![Mozilla Add-on](https://img.shields.io/amo/v/online-chess-enhancement-suite?style=flat-square)](https://addons.mozilla.org/en-US/firefox/addon/online-chess-enhancement-suite/)
+
 A web browser extension that allows to use keyboard and mouse to move pieces on [lichess.org](https://lichess.org).
 To move a piece, point the mouse cursor to the square that you would like to move to and press a key corresponding to a type of piece which sould be moved there.
 
