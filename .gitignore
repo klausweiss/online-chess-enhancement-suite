@@ -19,3 +19,5 @@ distribution
 # End of https://www.toptal.com/developers/gitignore/api/purescript
 local/
 web-ext-artifacts/
+oces.zip
+
