@@ -4,6 +4,7 @@
 		"start": "parcel src/extension/manifest.json --host localhost --target webext-dev --dist-dir distribution",
 		"build": "spago build && parcel build src/extension/manifest.json --no-content-hash --no-source-maps --dist-dir distribution --no-cache --detailed-report 0 --target webext-prod",
 		"dev": "spago build && parcel build src/extension/manifest.json --no-content-hash --no-source-maps --dist-dir distribution --no-cache --detailed-report 0 --target webext-dev --no-optimize",
+		"dist": "npm run build && web-ext build --overwrite-dest",
 		"lint": "run-p lint:*",
 		"lint-fix": "run-p 'lint:* -- --fix'",
 		"lint:css": "stylelint src/**/*.css",
