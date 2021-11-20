@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2021-11-20
+
+Fixed lichess key events being shadowed by the extension controls.
+
+
 ## [0.1.1] - 2021-11-19
 
 Initial version.
