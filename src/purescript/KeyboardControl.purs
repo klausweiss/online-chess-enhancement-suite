@@ -21,7 +21,7 @@ import OCES.Lichess as Lichess
 import OCSE.KeyboardControl.Keymap (Keymap, loadKeymap)
 import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
-import Signal.DOM.Prevented (keyPressed)
+import Signal.DOM.KeyEvent (KeyEvent, isKeyDown, isKeyUp, keyPressed, keycode, noopEvent, preventDefault)
 import Signal.Effect (foldEffect)
 
 reverseMap :: forall e k. Enum e => Bounded e => Ord k => (e -> k) -> k -> Maybe e
@@ -53,20 +53,22 @@ type Config =
 data KeyEventType = KeyUp | KeyDown
 derive instance eqKeyEvent :: Eq KeyEventType
 
-keySignal :: KeyEventType -> Keycode -> Effect (Signal Keycode)
+keySignal :: KeyEventType -> Keycode -> Effect (Signal KeyEvent)
 keySignal preferredKeyEventType key = 
   let 
-    isKeyDown = eq true
-    isKeyUp = not <<< isKeyDown
     pref = if preferredKeyEventType == KeyUp 
-             then {supported: supportsKeyUp, eventFilter: {primary: isKeyUp, secondary: isKeyDown}, default: false} 
-             else {supported: supportsKeyDown, eventFilter: {primary: isKeyDown, secondary: isKeyUp}, default: true}
+             then { supported: supportsKeyUp
+                  , eventFilter: {primary: isKeyUp, secondary: isKeyDown}
+                  }
+             else { supported: supportsKeyDown
+                  , eventFilter: {primary: isKeyDown, secondary: isKeyUp}
+                  }
   in do
-    signal <- keyPressed true key 
+    signal <- keyPressed key 
     let thisKeyFilter = if pref.supported key then pref.eventFilter.primary else pref.eventFilter.secondary
-    pure $ const key <$> filter thisKeyFilter pref.default signal
+    pure $ filter thisKeyFilter noopEvent signal
 
-keymapSignals :: KeyEventType -> Keymap -> Effect (Signal Keycode)
+keymapSignals :: KeyEventType -> Keymap -> Effect (Signal KeyEvent)
 keymapSignals preferredKeyEventType keymap = 
   let
       pieceKeys = keymap.pieceKey <$> upFromIncluding bottom
@@ -75,11 +77,11 @@ keymapSignals preferredKeyEventType keymap =
       allSignals = traverse (keySignal preferredKeyEventType) allKeys
   in do
      mergedSignals <- mergeMany <$> allSignals
-     pure $ fromMaybe (constant (-1)) mergedSignals
+     pure $ fromMaybe (constant noopEvent) mergedSignals
 
 
 data AppSignal 
-  = KeyPressSignal Keycode
+  = KeyPressSignal KeyEvent
   | MovePointer CoordinatePair
 
 processSignal :: Config -> AppSignal -> State -> Effect State
@@ -89,26 +91,29 @@ processSignal config =
     keyToDisambiguation = reverseMap config.keymap.disambiguationKey
 
     processSignal' :: AppSignal -> State -> Effect State
-    processSignal' (KeyPressSignal key) state | key == config.keymap.cancelKey = do 
+    processSignal' (KeyPressSignal keyEvent) state | keycode keyEvent == config.keymap.cancelKey = do 
        Lichess.dimHighlights
+       preventDefault $ keyEvent
        pure state { inputState = NoInputYet }
-    processSignal' (KeyPressSignal key) state@{ inputState: NoInputYet } = do 
+    processSignal' (KeyPressSignal keyEvent) state@{ inputState: NoInputYet } = do 
        Lichess.dimHighlights
        possibleMoves <- join <<< Unfoldable.fromMaybe <$> (runMaybeT $ do
-         piece <- MaybeT $ pure $ keyToPiece key
+         piece <- MaybeT <<< pure <<< keyToPiece <<< keycode $ keyEvent
          square <- Lichess.coordsToSquare state.pointerPosition
          pieceMoves <- Lichess.findPossibleMoves piece square
+         lift <<< preventDefault $ keyEvent
          if pieceMoves == [] && config.shouldTolerateMissclicks then
           Lichess.findAllPossibleMoves square
          else
            pure pieceMoves
          ) :: Effect (Array PieceOnBoard)
        handlePossibleMoves state possibleMoves
-    processSignal' (KeyPressSignal key) state@{ inputState: DisambiguationNeeded possibleMoves } = do
+    processSignal' (KeyPressSignal keyEvent) state@{ inputState: DisambiguationNeeded possibleMoves } = do
        Lichess.dimHighlights
        newPossibleMoves <- fromMaybe possibleMoves <$> (runMaybeT $ do
-          dir <- MaybeT $ pure $ keyToDisambiguation key
+          dir <- MaybeT <<< pure <<< keyToDisambiguation <<< keycode $ keyEvent
           orientation <- Lichess.getOrientation
+          lift <<< preventDefault $ keyEvent
           pure $ filterByDirection orientation dir possibleMoves)
        handlePossibleMoves state newPossibleMoves
     processSignal' (MovePointer coords) s = do
