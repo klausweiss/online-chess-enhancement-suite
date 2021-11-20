@@ -11,9 +11,11 @@
 			"strict_min_version": "67.0"
 		}
 	},
-	"browser_action": {
+	"page_action": {
 		"default_icon": "icon.png",
-		"default_title": "Online Chess Enhancement Suite"
+		"default_title": "Online Chess Enhancement Suite",
+		"default_popup": "preferences.html",
+		"show_matches": ["https://lichess.org/*"]
 	},
 	"icons": {
 		"128": "icon.png"
@@ -31,6 +33,7 @@
 	},
 	"background": {
 		"scripts": [
+			"background-chrome-page-action.js",
 			"background-lichess.js"
 		]
 	},

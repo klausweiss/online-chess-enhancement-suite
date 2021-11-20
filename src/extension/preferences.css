@@ -1,3 +1,7 @@
+body {
+	min-width: 350px;
+}
+
 .grid {
 	display: flex;
 	flex-direction: column;
