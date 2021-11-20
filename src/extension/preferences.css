@@ -1,5 +1,7 @@
 body {
 	min-width: 350px;
+	font-family: sans-serif;
+	max-width: 430px;
 }
 
 .grid {
@@ -73,4 +75,14 @@ select.error {
 button.submit {
 	margin: 0.5em 0.2em;
 	min-width: 10em;
+}
+
+.banner {
+	padding: 1em 2em;
+	margin: 1em 0;
+	font-size: 1.2em;
+}
+
+.warning.banner {
+	background-color: #ffe09a;
 }

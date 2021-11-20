@@ -39,7 +39,10 @@ _cancelKeycodeInputField = Proxy :: Proxy "cancelKeycodeInputField"
 
 type Input = Keymap
 
-type State = Keymap
+type State = 
+  { keymap :: Keymap
+  , savedInThisSession :: Boolean
+  }
 
 data Action
   = Save
@@ -50,19 +53,19 @@ allEnumValues :: forall e. Enum e => Bounded e => Array e
 allEnumValues = upFromIncluding bottom
 
 render :: forall m. State -> HH.ComponentHTML Action Slots m
-render state = 
+render { keymap, savedInThisSession } = 
   let
       mkPieceInput piece 
         = HH.slot_ _pieceKeycodeInputField (LabeledPiece piece) KeycodeInputField.inputField 
-        { value: LabeledPiece piece, keycode: state.pieceKey piece }
+        { value: LabeledPiece piece, keycode: keymap.pieceKey piece }
 
       mkDisambiguationInput disambiguationDirection 
         = HH.slot_ _disambiguaionKeycodeInputField (LabeledDisambiguationDirection disambiguationDirection) KeycodeInputField.inputField 
-        { value: LabeledDisambiguationDirection disambiguationDirection, keycode: state.disambiguationKey disambiguationDirection }
+        { value: LabeledDisambiguationDirection disambiguationDirection, keycode: keymap.disambiguationKey disambiguationDirection }
 
       cancelInput 
         = HH.slot_ _cancelKeycodeInputField LabeledCancel KeycodeInputField.inputField 
-        { value: LabeledCancel, keycode: state.cancelKey }
+        { value: LabeledCancel, keycode: keymap.cancelKey }
 
       mkInputsGroup title children = HH.fieldset [] $ 
                                      [ HH.legend [] [ HH.text title ] ] <> children
@@ -83,8 +86,19 @@ render state =
       gridClass = ClassName "grid"
       rowClass = ClassName "row"
       columnClass = ClassName "column"
+      bannerClass = ClassName "banner"
+      warningClass = ClassName "warning"
+
+      maybeRefreshBanner = 
+        if not savedInThisSession 
+        then [] 
+        else [ HH.div 
+                [ HP.classes [ bannerClass, warningClass ] ]
+                [ HH.text "For the changes to take effect you will need to refresh the page." ]
+             ]
    in HH.div 
-        [ HP.classes [ gridClass ] ]
+        [ HP.classes [ gridClass ] ] $
+        maybeRefreshBanner <>
         [ HH.div 
           [ HP.classes [ rowClass ] ]
           [ HH.div 
@@ -103,7 +117,10 @@ render state =
         ]
 
 initialState :: Input -> State
-initialState keymap = keymap
+initialState keymap = 
+  { keymap
+  , savedInThisSession: false 
+  }
 
 handleAction :: forall m output. MonadEffect m => Action -> H.HalogenM State Action Slots output m Unit
 handleAction = 
@@ -119,7 +136,9 @@ handleAction =
           void $ traverse (\value -> H.tell _disambiguaionKeycodeInputField value KeycodeInputField.Commit) allEnumValues
           H.tell _cancelKeycodeInputField LabeledCancel KeycodeInputField.Commit
 
-          put newKeymap
+          put { keymap: newKeymap
+              , savedInThisSession: true
+              }
           liftEffect <<< HA.runHalogenAff $ saveKeymap newKeymap
 
         alert pieces disambiguations shouldAlertOnCancelKey = do
@@ -129,7 +148,7 @@ handleAction =
           void $ traverse (\value -> H.tell _pieceKeycodeInputField (LabeledPiece value) (KeycodeInputField.ShowError errorMsg)) pieces
           void $ traverse (\value -> H.tell _disambiguaionKeycodeInputField (LabeledDisambiguationDirection value) (KeycodeInputField.ShowError errorMsg)) disambiguations
     in do
-    keymap <- get
+    keymap <- get <#> (_.keymap)
 
     -- get input field values to a function
     pieceKeyFun <- 
