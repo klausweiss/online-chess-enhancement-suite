@@ -18,7 +18,6 @@ if (typeof (browser) !== "undefined") {
 		// It works with manifest V3, but we can't have this at this point.
 		return new Promise((resolve, _reject) => {
 			area[action](param, function(...args) {
-				console.log("resolving ", action);
 				resolve(...args);
 			});
 		});
