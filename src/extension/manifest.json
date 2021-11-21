@@ -27,12 +27,16 @@
 		"webRequest",
 		"storage"
 	],
+	"web_accessible_resources": [
+		"tutorial.html"
+	],
 	"options_ui": {
 		"chrome_style": true,
 		"page": "preferences.html"
 	},
 	"background": {
 		"scripts": [
+			"background-tutorial.js",
 			"background-chrome-page-action.js",
 			"background-lichess.js"
 		]

@@ -42,12 +42,17 @@
 		"@parcel/transformer-image": "^2.0.0-rc.0",
 		"npm-run-all": "^4.1.5",
 		"parcel": "^2.0.0-rc.0",
+		"posthtml-markdownit": "^1.2.3",
 		"purescript": "=0.14.4",
 		"spago": "^0.20.3",
 		"stylelint": "^13.13.1",
 		"stylelint-config-xo": "^0.20.0",
 		"web-ext": "^6.5.0",
 		"xo": "^0.44.0"
+	},
+	"alias": {
+		"./src/extension/docs/**": "./docs/$1",
+		"./src/extension/src/**": "./src/$1"
 	},
 	"targets": {
 		"webext-dev": {
