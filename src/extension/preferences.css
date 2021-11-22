@@ -4,6 +4,30 @@ body {
 	max-width: 430px;
 }
 
+nav {
+	text-align: right;
+	font-size: 1.3em;
+	line-height: 1.5em;
+}
+
+nav a, nav a::before {
+	vertical-align: middle;
+}
+
+nav a::before {
+	padding-right: .3em;
+}
+
+nav a.tutorial::before {
+	display: inline-block;
+	width: 1.5em;
+	height: 1.5em;
+	background-image: url('../vendor/reshot.com/tutorial.svg');
+	background-size: contain;
+	background-repeat: no-repeat;
+	content: '';
+}
+
 .grid {
 	display: flex;
 	flex-direction: column;

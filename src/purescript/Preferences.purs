@@ -96,6 +96,19 @@ render { keymap, savedInThisSession } =
                 [ HP.classes [ bannerClass, warningClass ] ]
                 [ HH.text "For the changes to take effect you will need to refresh the page." ]
              ]
+
+      navbar = [ HH.nav [] 
+                 [ HH.a 
+                   [ HP.href "tutorial.html" 
+                   , HP.target "blank_" 
+                   , HP.classes [ ClassName "tutorial" ]
+                   ] 
+                   [ --HH.div [ HP.classes [ClassName "icon tutorial"] ] []
+                    HH.text "tutorial" 
+                   ]
+                 ] 
+               ]
+
    in HH.div 
         [ HP.classes [ gridClass ] ] $
         maybeRefreshBanner <>
@@ -114,7 +127,9 @@ render { keymap, savedInThisSession } =
             [ HP.classes [ columnClass ] ]
             [ submitButton ]
           ]
-        ]
+        ] <>
+        navbar <>
+        []
 
 initialState :: Input -> State
 initialState keymap = 
