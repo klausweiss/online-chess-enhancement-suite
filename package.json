@@ -12,7 +12,7 @@
 		"lint:js": "xo",
 		"test": "run-p lint:* build",
 		"watch": "parcel watch src/extension/manifest.json --dist-dir distribution --no-cache --no-hmr",
-		"zip-src": "rm oces.zip && zip oces.zip -r * -x 'distribution/*' 'local/*' 'node_modules/*' 'output/*' 'web-ext-artifacts/*' 'docs/*'"
+		"zip-src": "touch oces.zip && rm oces.zip && zip oces.zip -r * -x 'distribution/*' 'local/*' 'node_modules/*' 'output/*' 'web-ext-artifacts/*' 'docs/*.mp4'"
 	},
 	"browserslist": [
 		"last 1 Chrome version",
