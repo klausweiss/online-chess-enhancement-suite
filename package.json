@@ -51,8 +51,8 @@
 		"xo": "^0.44.0"
 	},
 	"alias": {
-		"./src/extension/docs/**": "./docs/$1",
-		"./src/extension/src/**": "./src/$1"
+		"./src/docs/**": "./docs/$1",
+		"./src/src/**": "./src/$1"
 	},
 	"targets": {
 		"webext-dev": {

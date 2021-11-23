@@ -6,18 +6,18 @@ This short animated tutorial will teach you how to use this extension in just 4 
 
 Point on a square you want to move a piece to and press the key corresponding the piece of your choice.
 
-![Basic piece movement](./docs/basics.gif)
+![Basic piece movement](../docs/basics.gif)
 
 The default controls are written in the table below. They can be customized on the extension preferences page.
 
 Key | Piece
 --- | ----------
-`W` | ![Pawn](./src/vendor/cburnett/white-pawn.svg) &nbsp; Pawn
-`A` | ![Rook](./src/vendor/cburnett/white-rook.svg) &nbsp; Rook
-`S` | ![Knight](./src/vendor/cburnett/white-knight.svg) &nbsp; Knight
-`D` | ![Bishop](./src/vendor/cburnett/white-bishop.svg) &nbsp; Bishop
-`E` | ![King](./src/vendor/cburnett/white-king.svg) &nbsp; King
-`Q` | ![Queen](./src/vendor/cburnett/white-queen.svg) &nbsp; Queen
+`W` | ![Pawn](../src/vendor/cburnett/white-pawn.svg) &nbsp; Pawn
+`A` | ![Rook](../src/vendor/cburnett/white-rook.svg) &nbsp; Rook
+`S` | ![Knight](../src/vendor/cburnett/white-knight.svg) &nbsp; Knight
+`D` | ![Bishop](../src/vendor/cburnett/white-bishop.svg) &nbsp; Bishop
+`E` | ![King](../src/vendor/cburnett/white-king.svg) &nbsp; King
+`Q` | ![Queen](../src/vendor/cburnett/white-queen.svg) &nbsp; Queen
 
 ## Disambiguation
 
@@ -32,11 +32,11 @@ Key | Disambiguation
 `A` | Select the piece on the left
 `Esc` | Cancel highlight
 
-![Demo of move disambiguation](./docs/disambiguation.gif)
+![Demo of move disambiguation](../docs/disambiguation.gif)
 
 In case you want to cancel the move disambiguation and make a different move, you can do so using the `Esc` key.
 
-![How to cancel move disambiguation](./docs/cancel.gif)
+![How to cancel move disambiguation](../docs/cancel.gif)
 
 ## Missclicks
 
@@ -46,7 +46,7 @@ If you select a piece which cannot move to the square under cursor, all pieces w
 be asked to select the correct piece using the disambiguation keys which you know from the previous section (`A`, `W`, `S`, `D`).
 If there's only one piece that can move to the square under cursor, it will move there even when you got the key wrong.
 
-![How missclicks are handled](./docs/missclick.gif)
+![How missclicks are handled](../docs/missclick.gif)
 
 ## Next steps
 
