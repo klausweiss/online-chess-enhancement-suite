@@ -4,7 +4,7 @@ This short animated tutorial will teach you how to use this extension in just 4 
 
 ## Basic piece movement
 
-Point on a square you want to move a piece to and press the key corresponding the piece of your choice.
+Point at a square you want to move a piece to and press the key corresponding the piece of your choice.
 
 ![Basic piece movement](../docs/basics.gif)
 
