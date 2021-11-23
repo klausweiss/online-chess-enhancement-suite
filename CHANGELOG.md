@@ -1,10 +1,17 @@
 # Changelog
 
+## [0.2.1] - 2021-11-23
+
+- Fixed first rank of position not being detected in Firefox.
+- Fixed some typos in the tutorial.
+
+
 ## [0.2] - 2021-11-22
 
 - Replaced browser_action with page_action activated only on lichess.org
 - Showing an info banner after the configuration is saved
 - Added a tutorial which is opened after installation
+
 
 ## [0.1.2] - 2021-11-20
 
@@ -22,6 +29,7 @@ Features:
 - keymap customization
 
 
+[0.2.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.2.1
 [0.2]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.2
 [0.1.2]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.1.2
 [0.1.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.1.1
