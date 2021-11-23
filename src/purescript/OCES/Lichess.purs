@@ -2,6 +2,7 @@ module OCES.Lichess where
 
 import Prelude
 
+import Control.Alt ((<|>))
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Monad.Trans.Class (lift)
 import Data.Array (catMaybes, filterA, find, head)
@@ -146,15 +147,17 @@ getSquareFromElement boardSize orient el = do
    boardCoordsToSquare boardSize orient (coords + halfSquare)
 
 coordsRegex :: Regex
-coordsRegex = unsafeRegex "translate\\(\\s*(\\d+)(?:\\.\\d+)?px,\\s*(\\d+)(?:\\.\\d+)?px\\)" mempty
+coordsRegex = unsafeRegex "translate\\(\\s*(\\d+)(?:\\.\\d+)?px(?:,\\s*(\\d+)(?:\\.\\d+)?px)?\\)" mempty
 
 getCoordsFromStyleAttr :: String -> Maybe CoordinatePair
 getCoordsFromStyleAttr style = do
    -- example style: "transform: translate(0.5px, 180.433px);"
    -- converted to                         0    , 180
+   -- example style: "transform: translate(0.5px);"
+   -- converted to                         0    , 0
    matches <- match coordsRegex style
    x <- (join $ matches !! 1) >>= fromString
-   y <- (join $ matches !! 2) >>= fromString
+   y <- ((join $ matches !! 2) >>= fromString) <|> Just 0
    Just {x: x, y: y}
 
 
