@@ -34,7 +34,10 @@ reverseMap enumToKey =
 
 data InputState
   = NoInputYet
-  | DisambiguationNeeded (Array PieceOnBoard)
+  | DisambiguationNeeded
+    { possibleMoves :: Array PieceOnBoard
+    , forceDisambiguation :: Boolean
+    }
 
 derive instance eqInputState :: Eq InputState
 
@@ -47,6 +50,7 @@ type State =
 type Config = 
   { keymap :: Keymap
   , shouldTolerateMissclicks :: Boolean
+  , shouldAlwaysAskOnMissclicks :: Boolean
   , preferredKeyEventType :: KeyEventType
   }
 
@@ -90,6 +94,8 @@ processSignal config =
     keyToPiece = reverseMap config.keymap.pieceKey
     keyToDisambiguation = reverseMap config.keymap.disambiguationKey
 
+    listFromMaybeT mt = join <<< Unfoldable.fromMaybe <$> runMaybeT mt
+
     processSignal' :: AppSignal -> State -> Effect State
     processSignal' (KeyPressSignal keyEvent) state | keycode keyEvent == config.keymap.cancelKey = do 
        Lichess.dimHighlights
@@ -97,38 +103,54 @@ processSignal config =
        pure state { inputState = NoInputYet }
     processSignal' (KeyPressSignal keyEvent) state@{ inputState: NoInputYet } = do 
        Lichess.dimHighlights
-       possibleMoves <- join <<< Unfoldable.fromMaybe <$> (runMaybeT $ do
+       let getSquare = Lichess.coordsToSquare state.pointerPosition
+       pieceMoves <- listFromMaybeT do
          piece <- MaybeT <<< pure <<< keyToPiece <<< keycode $ keyEvent
-         square <- Lichess.coordsToSquare state.pointerPosition
+         square <- getSquare
          pieceMoves <- Lichess.findPossibleMoves piece square
          lift <<< preventDefault $ keyEvent
-         if pieceMoves == [] && config.shouldTolerateMissclicks then
-          Lichess.findAllPossibleMoves square
+         pure pieceMoves
+       let missclicked = pieceMoves == []
+       possibleMoves <- 
+         if missclicked && config.shouldTolerateMissclicks then
+           listFromMaybeT do 
+             square <- getSquare
+             Lichess.findAllPossibleMoves square
          else
            pure pieceMoves
-         ) :: Effect (Array PieceOnBoard)
-       handlePossibleMoves state possibleMoves
-    processSignal' (KeyPressSignal keyEvent) state@{ inputState: DisambiguationNeeded possibleMoves } = do
+       let newState = (
+           if missclicked && config.shouldAlwaysAskOnMissclicks then 
+             state { inputState = DisambiguationNeeded { possibleMoves: possibleMoves, forceDisambiguation: true } }
+           else 
+             state
+           )
+       handlePossibleMoves newState possibleMoves
+    processSignal' (KeyPressSignal keyEvent) state@{ inputState: DisambiguationNeeded disambiguationState } = do
        Lichess.dimHighlights
-       newPossibleMoves <- fromMaybe possibleMoves <$> (runMaybeT $ do
+       newPossibleMoves <- fromMaybe disambiguationState.possibleMoves <$> (runMaybeT $ do
           dir <- MaybeT <<< pure <<< keyToDisambiguation <<< keycode $ keyEvent
           orientation <- Lichess.getOrientation
           lift <<< preventDefault $ keyEvent
-          pure $ filterByDirection orientation dir possibleMoves)
+          pure $ filterByDirection orientation dir disambiguationState.possibleMoves)
        handlePossibleMoves state newPossibleMoves
     processSignal' (MovePointer coords) s = do
        pure $ s { pointerPosition = coords }
 
     handlePossibleMoves :: State -> Array PieceOnBoard -> Effect State
     handlePossibleMoves state [] = pure state
+    handlePossibleMoves state@{ inputState: DisambiguationNeeded { forceDisambiguation: true } } moves 
+      = showDisambiguation state moves
     handlePossibleMoves state [(PieceOnBoard _ source)] = do
        _ <- runMaybeT $ do
          dest <- Lichess.coordsToSquare state.pointerPosition
          lift $ movePiece source dest
        pure state { inputState = NoInputYet }
-    handlePossibleMoves state moves = do
+    handlePossibleMoves state moves 
+      = showDisambiguation state moves
+
+    showDisambiguation state moves = do
       Lichess.highlightSquares moves
-      pure $ state { inputState = DisambiguationNeeded moves }
+      pure $ state { inputState = DisambiguationNeeded { possibleMoves: moves, forceDisambiguation: false } }
 
    in processSignal'
 
@@ -146,6 +168,7 @@ mainAff = do
   keymap <- loadKeymap
   let config = { keymap: keymap 
                , shouldTolerateMissclicks: true 
+               , shouldAlwaysAskOnMissclicks: false
                , preferredKeyEventType: KeyDown
                }
   listenToEvents config
