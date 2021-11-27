@@ -3,7 +3,6 @@ module KeyboardControl where
 import Prelude
 
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
-import Control.Monad.Trans.Class (lift)
 import Data.Array (nub)
 import Data.Enum (class Enum, upFromIncluding)
 import Data.Map (Map, fromFoldable, lookup)
@@ -108,7 +107,7 @@ processSignal config =
          piece <- MaybeT <<< pure <<< keyToPiece <<< keycode $ keyEvent
          square <- getSquare
          pieceMoves <- Lichess.findPossibleMoves piece square
-         lift <<< preventDefault $ keyEvent
+         preventDefault $ keyEvent
          pure pieceMoves
        let missclicked = pieceMoves == []
        possibleMoves <- 
@@ -130,7 +129,7 @@ processSignal config =
        newPossibleMoves <- fromMaybe disambiguationState.possibleMoves <$> (runMaybeT $ do
           dir <- MaybeT <<< pure <<< keyToDisambiguation <<< keycode $ keyEvent
           orientation <- Lichess.getOrientation
-          lift <<< preventDefault $ keyEvent
+          preventDefault $ keyEvent
           pure $ filterByDirection orientation dir disambiguationState.possibleMoves)
        handlePossibleMoves state newPossibleMoves
     processSignal' (MovePointer coords) s = do
@@ -143,7 +142,7 @@ processSignal config =
     handlePossibleMoves state [(PieceOnBoard _ source)] = do
        _ <- runMaybeT $ do
          dest <- Lichess.coordsToSquare state.pointerPosition
-         lift $ movePiece source dest
+         movePiece source dest
        pure state { inputState = NoInputYet }
     handlePossibleMoves state moves 
       = showDisambiguation state moves
@@ -154,10 +153,9 @@ processSignal config =
 
    in processSignal'
 
-movePiece :: Square -> Square -> Effect Unit
-movePiece from to = do
-  _ <- runMaybeT $ Lichess.makeAMove from to
-  pure unit
+movePiece :: forall eff. MonadEffect eff => Square -> Square -> eff Unit
+movePiece from to = liftEffect do
+  void <<< runMaybeT $ Lichess.makeAMove from to
 
 main :: Effect Unit
 main = launchAff_ mainAff

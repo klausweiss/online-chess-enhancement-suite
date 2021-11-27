@@ -1,7 +1,7 @@
 "use strict";
 
 
-exports.keyPressedFFI =
+exports.keyPressedImpl =
 	function(constant) {
 		return function(keyCode) {
 			return function() {
@@ -26,7 +26,7 @@ exports.keyPressedFFI =
 exports.noopEvent = function() {
 	return new KeyboardEvent("keyup", { keyCode: -1 });
 };
-exports.preventDefault =
+exports.preventDefaultImpl =
 	function(keyEvent) { return function() { keyEvent.preventDefault(); } };
 exports.isKeyDown = function(keyEvent) { return keyEvent.type == "keydown" };
 exports.isKeyUp = function(keyEvent) { return keyEvent.type == "keyup" };
