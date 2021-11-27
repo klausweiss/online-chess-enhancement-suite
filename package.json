@@ -30,8 +30,8 @@
 		"json-schema": ">=0.4.0"
 	},
 	"alias": {
-		"./src/docs/**": "./docs/$1",
-		"./src/src/**": "./src/$1"
+		"./src/extension/sites/docs/**": "./docs/$1",
+		"./src/extension/sites/src/**": "./src/$1"
 	},
 	"targets": {
 		"webext-dev": {

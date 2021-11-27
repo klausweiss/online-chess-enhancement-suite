@@ -22,7 +22,7 @@ nav a.tutorial::before {
 	display: inline-block;
 	width: 1.5em;
 	height: 1.5em;
-	background-image: url('../vendor/reshot.com/tutorial.svg');
+	background-image: url('../../../vendor/reshot.com/tutorial.svg');
 	background-size: contain;
 	background-repeat: no-repeat;
 	content: '';
@@ -58,26 +58,26 @@ div.icon.piece
 	margin-right: .5em;
 }
 div.icon.Bishop {
-	background-image: url("../vendor/cburnett/black-bishop.svg");
+	background-image: url("../../../vendor/cburnett/black-bishop.svg");
 }
 div.icon.King {
-	background-image: url("../vendor/cburnett/black-king.svg");
+	background-image: url("../../../vendor/cburnett/black-king.svg");
 }
 div.icon.Knight {
-	background-image: url("../vendor/cburnett/black-knight.svg");
+	background-image: url("../../../vendor/cburnett/black-knight.svg");
 }
 div.icon.Pawn {
-	background-image: url("../vendor/cburnett/black-pawn.svg");
+	background-image: url("../../../vendor/cburnett/black-pawn.svg");
 }
 div.icon.Queen {
-	background-image: url("../vendor/cburnett/black-queen.svg");
+	background-image: url("../../../vendor/cburnett/black-queen.svg");
 }
 div.icon.Rook {
-	background-image: url("../vendor/cburnett/black-rook.svg");
+	background-image: url("../../../vendor/cburnett/black-rook.svg");
 }
 
 div.icon.direction {
-	background-image: url("../vendor/reshot.com/arrow-up.svg");
+	background-image: url("../../../vendor/reshot.com/arrow-up.svg");
 	box-sizing: border-box;
 }
 div.icon.Right { transform: rotate(90deg); }
@@ -85,7 +85,7 @@ div.icon.Bottom { transform: rotate(180deg); }
 div.icon.Left { transform: rotate(270deg); }
 
 div.icon.cancel {
-	background-image: url("../vendor/reshot.com/cancel.svg");
+	background-image: url("../../../vendor/reshot.com/cancel.svg");
 }
 
 span.old-value {
