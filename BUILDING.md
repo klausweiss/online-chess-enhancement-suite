@@ -1,13 +1,26 @@
 # Building online-chess-enhancement-suite
 
-Once you have development environment setup, building should be as simple as running:
+Once you have development environment setup, building the bundle for distribution should be as simple as running:
 
 ```sh
-npm run build
+npm run dist
 ```
 
-You should be able to setup the development environment with:
+
+To setup the development environment it should be enough to run:
 ```sh
-npm install
+npm install --include=dev
 ```
+
+
+## Development
+
+Build the development version with:
+
+```sh
+npm run dev
+```
+
+This will create a `distribution/webext-dev/` folder.
+Open the browser config page where you debug extensions and load the extension from this folder.
 
