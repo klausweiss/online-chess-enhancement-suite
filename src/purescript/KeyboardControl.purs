@@ -17,6 +17,7 @@ import OCES.Chess (PieceOnBoard(..), Square)
 import OCES.Disambiguation (filterByDirection)
 import OCES.Keyboard (Keycode, supportsKeyDown, supportsKeyUp)
 import OCES.Lichess as Lichess
+import OCES.Missclicks (MissclickBehavior(..), toleratesMissclicks)
 import OCSE.KeyboardControl.Keymap (Keymap, loadKeymap)
 import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
@@ -48,8 +49,7 @@ type State =
 
 type Config = 
   { keymap :: Keymap
-  , shouldTolerateMissclicks :: Boolean
-  , shouldAlwaysAskOnMissclicks :: Boolean
+  , missclickBehavior :: MissclickBehavior
   , preferredKeyEventType :: KeyEventType
   }
 
@@ -111,14 +111,14 @@ processSignal config =
          pure pieceMoves
        let missclicked = pieceMoves == []
        possibleMoves <- 
-         if missclicked && config.shouldTolerateMissclicks then
+         if missclicked && toleratesMissclicks config.missclickBehavior then
            listFromMaybeT do 
              square <- getSquare
              Lichess.findAllPossibleMoves square
          else
            pure pieceMoves
        let newState = (
-           if missclicked && config.shouldAlwaysAskOnMissclicks then 
+           if missclicked && config.missclickBehavior == AlwaysAskForConfirmation then 
              state { inputState = DisambiguationNeeded { possibleMoves: possibleMoves, forceDisambiguation: true } }
            else 
              state
@@ -165,8 +165,7 @@ mainAff = do
   Lichess.enablePlugin
   keymap <- loadKeymap
   let config = { keymap: keymap 
-               , shouldTolerateMissclicks: true 
-               , shouldAlwaysAskOnMissclicks: false
+               , missclickBehavior: AlwaysAskForConfirmation
                , preferredKeyEventType: KeyDown
                }
   listenToEvents config
