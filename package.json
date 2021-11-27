@@ -23,7 +23,11 @@
 		"posthtml-markdownit": "=1.2.3",
 		"purescript": "=0.14.4",
 		"spago": "=0.20.3",
-		"web-ext": "=6.6.0"
+		"web-ext": "=6.6.0",
+		"json-schema": ">=0.4.0"
+	},
+	"dependencies pinned due to dependabot security alerts": {
+		"json-schema": ">=0.4.0"
 	},
 	"alias": {
 		"./src/docs/**": "./docs/$1",
