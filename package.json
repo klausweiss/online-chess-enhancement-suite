@@ -4,51 +4,26 @@
 		"start": "parcel src/extension/manifest.json --host localhost --target webext-dev --dist-dir distribution",
 		"build": "spago build && parcel build src/extension/manifest.json --no-content-hash --no-source-maps --dist-dir distribution --no-cache --detailed-report 0 --target webext-prod",
 		"dev": "spago build && parcel build src/extension/manifest.json --no-content-hash --no-source-maps --dist-dir distribution --no-cache --detailed-report 0 --target webext-dev --no-optimize",
-		"dist": "npm run build && web-ext build --overwrite-dest",
-		"dist-chrome": "npm run build && ln -s ./distribution/webext-prod chrome_online-chess-enhancement-suite && zip chrome_online-chess-enhancement-suite_`cat ./src/extension/manifest.json | jq -r .version`.zip -r chrome_online-chess-enhancement-suite && rm chrome_online-chess-enhancement-suite",
-		"lint": "run-p lint:*",
-		"lint-fix": "run-p 'lint:* -- --fix'",
-		"lint:css": "stylelint src/**/*.css",
-		"lint:js": "xo",
-		"test": "run-p lint:* build",
-		"watch": "parcel watch src/extension/manifest.json --dist-dir distribution --no-cache --no-hmr",
-		"zip-src": "touch oces.zip && rm oces.zip && zip oces.zip -r * -x 'distribution/*' 'local/*' 'node_modules/*' 'output/*' 'web-ext-artifacts/*' 'docs/*.mp4'"
+		"dist": "npm-run-all dist:*",
+		"dist:chrome": "npm run build && ln -s ./distribution/webext-prod chrome_online-chess-enhancement-suite && zip chrome_online-chess-enhancement-suite_`cat ./src/extension/manifest.json | jq -r .version`.zip -r chrome_online-chess-enhancement-suite && rm chrome_online-chess-enhancement-suite",
+		"dist:webext": "npm run build && web-ext build --overwrite-dest",
+		"dist:zip-src": "touch oces.zip && rm oces.zip && zip oces.zip -r * -x 'distribution/*' 'local/*' 'node_modules/*' 'output/*' 'web-ext-artifacts/*' 'docs/*.mp4' '*.zip' 'chrome_*/*' 'oces/*'",
+		"watch": "parcel watch src/extension/manifest.json --dist-dir distribution --no-cache --no-hmr"
 	},
 	"browserslist": [
 		"last 1 Chrome version",
 		"last 1 Firefox version"
 	],
-	"xo": {
-		"envs": [
-			"browser"
-		],
-		"rules": {
-			"no-unused-vars": [
-				"error",
-				{
-					"varsIgnorePattern": "browser"
-				}
-			]
-		}
-	},
-	"stylelint": {
-		"extends": "stylelint-config-xo"
-	},
-	"dependencies": {
-		"webextension-polyfill": "^0.8.0"
-	},
+	"dependencies": {},
 	"devDependencies": {
-		"@parcel/config-webextension": "^2.0.0-rc.0",
-		"@parcel/transformer-image": "^2.0.0-rc.0",
-		"npm-run-all": "^4.1.5",
-		"parcel": "^2.0.0-rc.0",
-		"posthtml-markdownit": "^1.2.3",
+		"@parcel/config-webextension": "=2.0.1",
+		"@parcel/transformer-image": "=2.0.1",
+		"npm-run-all": "=4.1.5",
+		"parcel": "=2.0.1",
+		"posthtml-markdownit": "=1.2.3",
 		"purescript": "=0.14.4",
-		"spago": "^0.20.3",
-		"stylelint": "^13.13.1",
-		"stylelint-config-xo": "^0.20.0",
-		"web-ext": "^6.5.0",
-		"xo": "^0.44.0"
+		"spago": "=0.20.3",
+		"web-ext": "=6.6.0"
 	},
 	"alias": {
 		"./src/docs/**": "./docs/$1",
