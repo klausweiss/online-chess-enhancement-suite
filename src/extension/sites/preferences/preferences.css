@@ -101,6 +101,11 @@ button.submit {
 	min-width: 10em;
 }
 
+.enumSlider .label {
+	font-weight: bold;
+	line-height: 2.5em;
+}
+
 .banner {
 	padding: 1em 2em;
 	margin: 1em 0;

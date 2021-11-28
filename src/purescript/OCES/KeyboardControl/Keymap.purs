@@ -56,8 +56,7 @@ loadKeymap = do
 
 saveKeymap :: Keymap -> Aff Unit
 saveKeymap keymap = do
-  _ <- attempt (Storage.set Storage.Local keymapPrefKey (jsonEncodeKeymap keymap)) 
-  pure unit
+  void $ attempt (Storage.set Storage.Local keymapPrefKey (jsonEncodeKeymap keymap)) 
 
 
 type EncodedFunction k v = Array { key :: k, value :: v }

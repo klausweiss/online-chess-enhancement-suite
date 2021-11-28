@@ -23,6 +23,7 @@ to generate this file without the comments in this block.
   , "foldable-traversable"
   , "halogen"
   , "integers"
+  , "lists"
   , "maybe"
   , "ordered-collections"
   , "partial"
