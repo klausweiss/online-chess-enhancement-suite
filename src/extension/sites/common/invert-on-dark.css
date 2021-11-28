@@ -1,6 +1,9 @@
 @media (prefers-color-scheme: dark) {
-    body, img {
+    body {
         background-color: #1a1a1a;
+    }
+
+    body, img, .warning.banner {
 				filter: invert();
     }
 }
