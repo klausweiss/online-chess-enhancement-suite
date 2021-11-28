@@ -57,3 +57,5 @@ That's all there's to it!
 It's recommended to try the new controls in solo mode before using it in games.
 You can try with [Puzzle Strom](https://lichess.org/storm) for starters.
 Have fun!
+
+Once you're comfortable with using the extension, make sure to look at the extension preferences to customize it to your liking.
