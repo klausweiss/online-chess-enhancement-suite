@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3] - 2021-11-28
+
+**Breaking changes:**
+- From now on, after a missclick you will need to confirm the move, even when only one piece is able to make the move to the selected square.
+This behavior can be customized in the extension preferences.
+**The old behavior with automatically performing the only move is still possible, turn it on in the extension preferences.**
+It's also possible to ignore missclicks altogether.
+
+Other changes:
+- Tutorial and preferences can handle browser preference for dark mode.
+- Relevant changes are shown after update.
+
+
 ## [0.2.1] - 2021-11-23
 
 - Fixed first rank of position not being detected in Firefox.
@@ -29,6 +42,7 @@ Features:
 - keymap customization
 
 
+[0.3]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3
 [0.2.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.2.1
 [0.2]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.2
 [0.1.2]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.1.2
