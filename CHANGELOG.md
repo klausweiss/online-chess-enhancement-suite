@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1] - 2021-11-28
+
+- Fix extension getting stuck after a missclick on an unreachable square.
+
+
 ## [0.3] - 2021-11-28
 
 **Breaking changes:**
@@ -42,6 +47,7 @@ Features:
 - keymap customization
 
 
+[0.3.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3.1
 [0.3]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3
 [0.2.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.2.1
 [0.2]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.2
