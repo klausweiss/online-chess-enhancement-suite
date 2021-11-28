@@ -44,7 +44,10 @@ The best thing about this extension is how fast the moves can be made.
 It's natural that missclicks happen, especially when you're just learning.
 If you select a piece which cannot move to the square under cursor, all pieces which can will be higlighted and you will
 be asked to select the correct piece using the disambiguation keys which you know from the previous section (`A`, `W`, `S`, `D`).
-If there's only one piece that can move to the square under cursor, it will move there even when you got the key wrong.
+
+If there's only one piece that can move to the square under cursor, you will be asked to confirm the move by pressing any of the `A`, `W`, `S`, `D` keys.
+You can customize this behavior in extension preferences to move the piece without confirmation or to ignore missclicks altogether.
+
 
 ![How missclicks are handled](../docs/missclick.gif)
 
