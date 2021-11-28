@@ -117,8 +117,9 @@ processSignal config =
              Lichess.findAllPossibleMoves square
          else
            pure pieceMoves
+       let anyMovesPossible = possibleMoves /= []
        let newState = (
-           if missclicked && config.missclickBehavior == AlwaysAskForConfirmation then 
+           if missclicked && config.missclickBehavior == AlwaysAskForConfirmation && anyMovesPossible then 
              state { inputState = DisambiguationNeeded { possibleMoves: possibleMoves, forceDisambiguation: true } }
            else 
              state
