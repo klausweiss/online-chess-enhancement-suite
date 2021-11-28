@@ -8,7 +8,6 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Show.Generic (genericShow)
 import Effect.Aff (Aff, attempt)
 import Effect.Class (liftEffect)
-import Effect.Console (logShow)
 import WebExtension.Storage as Storage
 
 
@@ -40,7 +39,6 @@ missclickBehaviorPrefKey = "missclickBehavior"
 
 saveMissclickBehavior :: MissclickBehavior -> Aff Unit
 saveMissclickBehavior mb = do
-  liftEffect $ logShow mb
   void $ attempt (Storage.set Storage.Local missclickBehaviorPrefKey (show mb))
 
 loadMissclickBehavior :: Aff MissclickBehavior
@@ -49,6 +47,5 @@ loadMissclickBehavior = do
     attempt (Storage.get Storage.Local missclickBehaviorPrefKey) 
     <#> hush 
     <#> \mb -> mb >>= parseMissclickBehavior
-  liftEffect $ logShow maybeMissclickBehavior
   pure $ fromMaybe defaultMissclickBehavior maybeMissclickBehavior
 
