@@ -17,7 +17,7 @@ import OCES.Chess (PieceOnBoard(..), Square)
 import OCES.Disambiguation (filterByDirection)
 import OCES.Keyboard (Keycode, supportsKeyDown, supportsKeyUp)
 import OCES.Lichess as Lichess
-import OCES.Missclicks (MissclickBehavior(..), toleratesMissclicks)
+import OCES.Missclicks (MissclickBehavior(..), loadMissclickBehavior, toleratesMissclicks)
 import OCSE.KeyboardControl.Keymap (Keymap, loadKeymap)
 import Signal (Signal, constant, filter, mergeMany)
 import Signal.DOM (mousePos, CoordinatePair)
@@ -164,8 +164,9 @@ mainAff :: Aff Unit
 mainAff = do
   Lichess.enablePlugin
   keymap <- loadKeymap
+  missclickBehavior <- loadMissclickBehavior
   let config = { keymap: keymap 
-               , missclickBehavior: AlwaysAskForConfirmation
+               , missclickBehavior: missclickBehavior
                , preferredKeyEventType: KeyDown
                }
   listenToEvents config
