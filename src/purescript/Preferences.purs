@@ -130,7 +130,7 @@ render state =
 
       navbar = [ HH.nav [] 
                  [ HH.a 
-                   [ HP.href "tutorial.html" 
+                   [ HP.href "/sites/tutorial/tutorial.html" 
                    , HP.target "blank_" 
                    , HP.classes [ ClassName "tutorial" ]
                    ] 
