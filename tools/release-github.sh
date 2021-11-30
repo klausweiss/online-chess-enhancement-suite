@@ -4,6 +4,7 @@ set -e
 
 
 function getLatestVersionChanges {
+	# keep in sync with release-firefox.sh
 	cat CHANGELOG.md \
 	| awk '
 		BEGIN { headers = 0 } 
@@ -12,11 +13,13 @@ function getLatestVersionChanges {
 			if (headers == 2 && !/^#/) { print } # only print lines of the second header
 		}
 	' \
+	| grep -v "#ignore-in-changelog-within-extension" \
 	| sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}'  
 	# ^ remove empty lines from the beginning and the end of the file
 }
 
 function getLatestVersion {
+	# keep in sync with release-firefox.sh
 	cat CHANGELOG.md \
 	| awk '
 		BEGIN { headers = 0 } 
@@ -42,4 +45,4 @@ function releaseGithub {
 }
 
 echo "Releasing plugin on github"
-releaseGithub
+#releaseGithub
