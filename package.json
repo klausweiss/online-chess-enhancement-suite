@@ -7,24 +7,24 @@
 		"dist": "npm-run-all dist:*",
 		"dist:chrome": "npm run build && ln -s ./distribution/webext-prod chrome_online-chess-enhancement-suite && zip chrome_online-chess-enhancement-suite_`cat ./src/extension/manifest.json | jq -r .version`.zip -r chrome_online-chess-enhancement-suite && rm chrome_online-chess-enhancement-suite",
 		"dist:webext": "npm run build && web-ext build --overwrite-dest",
-		"dist:zip-src": "touch oces.zip && rm oces.zip && zip oces.zip -r * -x 'distribution/*' 'local/*' 'node_modules/*' 'output/*' 'web-ext-artifacts/*' 'docs/*.mp4' '*.zip' 'chrome_*/*' 'oces/*'",
+		"dist:zip-src": "touch oces.zip && rm oces.zip && zip oces.zip -r * -x 'distribution/*' 'local/*' 'node_modules/*' 'output/*' 'web-ext-artifacts/*' 'docs/*.mp4' '*.zip' 'chrome_*/*' 'oces/*' '*.xpi'",
 		"watch": "parcel watch src/extension/manifest.json --dist-dir distribution --no-cache --no-hmr"
 	},
 	"browserslist": [
 		"last 1 Chrome version",
 		"last 1 Firefox version"
 	],
-	"dependencies": {},
 	"devDependencies": {
 		"@parcel/config-webextension": "=2.0.1",
 		"@parcel/transformer-image": "=2.0.1",
+		"json-schema": ">=0.4.0",
 		"npm-run-all": "=4.1.5",
 		"parcel": "=2.0.1",
 		"posthtml-markdownit": "=1.2.3",
 		"purescript": "=0.14.4",
 		"spago": "=0.20.3",
 		"web-ext": "=6.6.0",
-		"json-schema": ">=0.4.0"
+		"web-ext-submit": "=6.6.0"
 	},
 	"dependencies pinned due to dependabot security alerts": {
 		"json-schema": ">=0.4.0"
