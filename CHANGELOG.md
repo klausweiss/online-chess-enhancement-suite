@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2] - 2021-11-29 
+> [Version ignored in changelog within extension](#ignore-in-changelog-within-extension)
+
+- Fix the tutorial link on the preferences page.
+- Hide changelog if no changes require being acknowledged by the user.
+
+
 ## [0.3.1] - 2021-11-28
 
 - Fix extension getting stuck after a missclick on an unreachable square.
@@ -47,6 +54,7 @@ Features:
 - keymap customization
 
 
+[0.3.2]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3.2
 [0.3.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3.1
 [0.3]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3
 [0.2.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.2.1
