@@ -45,4 +45,4 @@ function releaseGithub {
 }
 
 echo "Releasing plugin on github"
-#releaseGithub
+releaseGithub
