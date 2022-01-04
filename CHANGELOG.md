@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.3] - 2022-01-04
+
+**Attention!**
+Lichess updated their [Fair Play Guidelines](https://lichess.org/page/fair-play). Keyboard extensions [are now banned](https://lichess.org/page/play-extensions) [😭](#noinvert).
+Please comply with Lichess rules and don't use keyboard input when competing against other players.
+
+Changes:
+- Updated tutorial to instruct not to use OCES in games.
+
+
 ## [0.3.2] - 2021-11-29 
 > [Version ignored in changelog within extension](#ignore-in-changelog-within-extension)
 
@@ -54,6 +64,7 @@ Features:
 - keymap customization
 
 
+[0.3.3]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3.3
 [0.3.2]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3.2
 [0.3.1]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3.1
 [0.3]: https://github.com/klausweiss/online-chess-enhancement-suite/releases/tag/0.3

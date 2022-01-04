@@ -8,6 +8,8 @@ To move a piece, point the mouse cursor to the square that you would like to mov
 
 ![Basic piece movement](./docs/basics.gif)
 
+Remember to comply with Lichess Fair Play Guide and don't use the extension when competing against other players!
+
 Shoutout to [Lichess-Keyboard-Input](https://github.com/Sentero-esp12/Lichess-Keyboard-Input) for the original idea.
 It differs from the original extension in that all pieces of the same kind are controlled using the same key.
 

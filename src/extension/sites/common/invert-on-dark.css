@@ -3,7 +3,7 @@
         background-color: #1a1a1a;
     }
 
-    body, img, .warning.banner {
+    body, img, .warning.banner, *[href="#noinvert"] {
 				filter: invert();
     }
 }

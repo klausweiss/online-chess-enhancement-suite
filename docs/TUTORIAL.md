@@ -1,6 +1,7 @@
 # Online Chess Enhancement Suite tutorial
 
 This short animated tutorial will teach you how to use this extension in just 4 gifs.
+Note that according to [Lichess Fair Play Guidelines](https://lichess.org/page/fair-play) you can't use this extension when competing against other players.
 
 ## Basic piece movement
 
@@ -54,7 +55,7 @@ You can customize this behavior in extension preferences to move the piece witho
 ## Next steps
 
 That's all there's to it!
-It's recommended to try the new controls in solo mode before using it in games.
+Remember to only use this extension in solo mode.
 You can try with [Puzzle Strom](https://lichess.org/storm) for starters.
 Have fun!
 
