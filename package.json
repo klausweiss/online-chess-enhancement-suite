@@ -17,8 +17,10 @@
 	"devDependencies": {
 		"@parcel/config-webextension": "=2.0.1",
 		"@parcel/transformer-image": "=2.0.1",
+		"follow-redirects": ">=1.14.7",
 		"json-schema": ">=0.4.0",
 		"markdown-it": ">=12.3.2",
+		"node-forge": ">=1.0.0",
 		"npm-run-all": "=4.1.5",
 		"parcel": "=2.0.1",
 		"posthtml-markdownit": "=1.2.3",
@@ -28,8 +30,10 @@
 		"web-ext-submit": "=6.6.0"
 	},
 	"dependencies pinned due to dependabot security alerts": {
+		"follow-redirects": ">=1.14.7",
 		"json-schema": ">=0.4.0",
-		"markdown-it": ">=12.3.2"
+		"markdown-it": ">=12.3.2",
+		"node-forge": ">=1.0.0"
 	},
 	"alias": {
 		"./src/extension/sites/docs/**": "./docs/$1",
